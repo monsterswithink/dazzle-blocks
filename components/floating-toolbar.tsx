@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Palette, Share, Edit3, Linkedin, Check } from "lucide-react"
 import type { ResumeTheme } from "@/types/profile"
+import { SharePopover } from "./share-popover"
 
 interface FloatingToolbarProps {
   isEditMode: boolean
@@ -22,7 +23,6 @@ export function FloatingToolbar({
   currentTheme,
 }: FloatingToolbarProps) {
   const [themes, setThemes] = useState<ResumeTheme[]>([])
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     // Load available themes
@@ -46,16 +46,6 @@ export function FloatingToolbar({
     }
     loadThemes()
   }, [])
-
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error("Failed to copy URL:", error)
-    }
-  }
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
@@ -86,10 +76,12 @@ export function FloatingToolbar({
         <div className="w-px h-6 bg-gray-300" />
 
         {/* Share Button */}
-        <Button variant="ghost" size="sm" className="rounded-full" onClick={handleShare}>
-          {copied ? <Check className="h-4 w-4 mr-2" /> : <Share className="h-4 w-4 mr-2" />}
-          {copied ? "Copied!" : "Share"}
-        </Button>
+        <SharePopover>
+          <Button variant="ghost" size="sm" className="rounded-full">
+            <Share className="h-4 w-4 mr-2" />
+            Share
+          </Button>
+        </SharePopover>
 
         <div className="w-px h-6 bg-gray-300" />
 

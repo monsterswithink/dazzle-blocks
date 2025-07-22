@@ -25,7 +25,7 @@ export function ResumeDisplay({ profile, theme, isEditMode, onProfileUpdate }: R
 
   return (
     <div
-      className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden"
+      className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden resume-container"
       style={{
         fontFamily: theme.fonts.body,
         color: theme.colors.text,

@@ -25,7 +25,7 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <Button asChild className="w-full">
-                <Link href="/auth">
+                <Link href="/api/auth/callback/linkedin">
                   <Linkedin className="h-4 w-4 mr-2" />
                   Sign in with LinkedIn
                 </Link>

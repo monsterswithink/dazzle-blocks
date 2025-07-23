@@ -1,4 +1,4 @@
-import { supabase } from "./supabase"
+import { supabase } from "@/lib/supabase"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
 export interface ResumeData {

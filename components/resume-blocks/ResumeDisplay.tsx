@@ -161,7 +161,22 @@ export function ResumeDisplay({ profile, theme, isEditMode, onProfileUpdate }: R
                   Experience
                 </h2>
                 <div className="space-y-6">
+                   {Array.isArray(profile.experiences) && profile.experiences.length > 0 ? (
                   {profile.experiences?.map((exp, index) => (
+                  <div key={idx} className="mb-4">
+                    <h3 className="text-lg font-bold">{exp.title || "Untitled role"}</h3>
+                    <p className="text-sm text-gray-600">{exp.company || "Unknown company"}</p>
+                    {exp.starts_at?.year &&
+                     <p className="text-xs text-gray-500">
+                      {exp.starts_at.year} - {exp.ends_at?.year || "Present"}
+                        </p>
+                          )}
+                          {exp.description && <p>{exp.description}</p>}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 italic">No work experience listed</p>
+                    )
                     <div key={index} className="relative pl-8 border-l-2 border-gray-200">
                       <div
                         className="absolute -left-2 top-0 w-4 h-4 rounded-full"

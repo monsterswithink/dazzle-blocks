@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu"
 import { Palette, Share, Edit3, Linkedin, Check } from "lucide-react"
 import type { ResumeTheme } from "@/types/profile"
-import { SharePopover } from "./share-popover"
+import { SharePopover } from "@/components/tools/SharePopover"
 
 interface FloatingToolbarProps {
   isEditMode: boolean

@@ -24,6 +24,8 @@
       "@/app/*": ["./app/*"],
       "#styles": ["./app/globals.css"],
       "@/components/*": ["./components/*"],
+      "@/components/tools/*": ["./components/tools/*"],
+      "@/components/resume/*": ["./components/resume/*"],
       "@/ui/*": ["./components/ui/*"],
       "@/lib/*": ["./lib/*"],
       "@/hooks/*": ["./hooks/*"],

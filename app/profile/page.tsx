@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { ResumeService } from "@/lib/resume-service"
-import { ProfileSnapshotCard } from "@/resume-tools/ProfileSnapshotCard"
+import { ProfileSnapshotCard } from "@/resume-blocks/ProfileSnapshotCard"
 
 export default function ProfilePage() {
   const { data: session } = useSession()

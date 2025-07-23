@@ -1,6 +1,6 @@
 import { createClient } from "@liveblocks/client"
 import { createRoomContext } from "@liveblocks/react"
-import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
+import type { EnrichedProfile, ResumeTheme } from "@types/profile"
 
 type Presence = {}
 

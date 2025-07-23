@@ -9,5 +9,11 @@ export default withAuth({
 })
 
 export const config = {
-  matcher: ["/profile/:path*"],
+  matcher: [
+    "/profile/:path*",
+    "/resume/:path*",
+    "/editor",
+    "/editor/:path*",
+    // add others as needed
+  ],
 }

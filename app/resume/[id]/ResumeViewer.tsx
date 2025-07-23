@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { RoomProvider } from "@/lib/liveblocks"
-import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
-import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
-import { ResumeService, type ResumeData } from "@/lib/resume-service"
-import { supabase } from "@/lib/supabase"
-import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
+import { RoomProvider } from "@lib/liveblocks"
+import { FloatingToolbar } from "@resume-tools/FloatingToolbar"
+import { ResumeDisplay } from "@resume-blocks/ResumeDisplay"
+import { ResumeService, type ResumeData } from "@lib/resume-service"
+import { supabase } from "@lib/supabase"
+import type { EnrichedProfile, ResumeTheme } from "@types/profile"
 
 interface ResumeViewerProps {
   initialData: ResumeData

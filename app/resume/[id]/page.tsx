@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import { ResumeService } from "@/lib/resume-service"
-import ResumeViewer from "@/components/resume/Viewer"
+import ResumeViewer from "@/resume-blocks/ResumeViewer"
 
 interface ResumePageProps {
   params: { id: string }

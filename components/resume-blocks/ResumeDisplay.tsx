@@ -1,8 +1,8 @@
 "use client"
 
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
-import { EditableText } from "@/components/resume/EditableText"
-import { SkillsChart } from "@/components/resume/Skills"
+import { EditableText } from "@/resume-blocks/EditableText"
+import { SkillsChart } from "@/resume-blocks/Skills"
 import { Button } from "@/ui/button"
 import { Mail, Linkedin, Globe, MapPin, Calendar } from "lucide-react"
 import Image from "next/image"

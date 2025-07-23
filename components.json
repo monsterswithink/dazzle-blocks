@@ -11,8 +11,8 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/resume-tools",
-     "components": "@/resume-blocks",
+    "resume-tools": "@/resume-tools",
+     "resume-blocks": "@/resume-blocks",
      "components": "@/components",
     "utils": "@/lib/utils",
     "ui": "@/ui",

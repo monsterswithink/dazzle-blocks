@@ -3,7 +3,7 @@
 import { Button } from "@/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
 import { Progress } from "@/ui/progress"
-import { SharePopover } from "@/components/tools/SharePopover"
+import { SharePopover } from "@/uitools/SharePopover"
 import { useOthers, RoomProvider } from "@/lib/liveblocks"
 import Image from "next/image"
 import { Users, Loader2, ExternalLink } from "lucide-react"

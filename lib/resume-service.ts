@@ -1,5 +1,5 @@
-import { supabase } from "@lib/supabase"
-import type { EnrichedProfile, ResumeTheme } from "@types/profile"
+import { supabase } from "@/lib/supabase"
+import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
 export interface ResumeData {
   profile: EnrichedProfile

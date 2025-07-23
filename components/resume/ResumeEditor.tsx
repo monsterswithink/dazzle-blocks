@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { RoomProvider, useStorage, useMutation } from "@/lib/liveblocks"
-import { FloatingToolbar } from "@/components/tools/FloatingToolbar"
-import { ResumeDisplay } from "@/components/resume/resume-display"
+import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
+import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
 function ResumeEditorContent() {

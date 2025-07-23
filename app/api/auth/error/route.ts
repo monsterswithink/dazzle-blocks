@@ -1,5 +1,5 @@
-import { NextResponse }, type { NextRequest } from "next/server"
-/*import type { NextRequest } from "next/server" */
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 /**
  * NextAuth still points to `/api/auth/error`.

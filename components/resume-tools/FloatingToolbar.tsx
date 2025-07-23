@@ -5,7 +5,7 @@ import { Button } from "@/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu"
 import { Palette, Share, Edit3, Linkedin, Check } from "lucide-react"
 import type { ResumeTheme } from "@/types/profile"
-import { SharePopover } from "@/components/tools/SharePopover"
+import { SharePopover } from "@/resume-tools/SharePopover"
 
 interface FloatingToolbarProps {
   isEditMode: boolean

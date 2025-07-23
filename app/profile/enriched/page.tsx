@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ResumeService } from "@lib/resume-service"
-import { Button } from "@ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card"
+import { ResumeService } from "@/lib/resume-service"
+import { Button } from "@/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
 import { CheckCircle, ExternalLink, Loader2 } from "lucide-react"
 
 export default function EnrichedProfilePage() {

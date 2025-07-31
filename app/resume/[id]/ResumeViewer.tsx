@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { RoomProvider } from "@/lib/liveblocks"
+import { VeltDocumentProvider, useDocument } from "@veltdev/react"
 import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import { ResumeService, type ResumeData } from "@/lib/resume-service"
@@ -15,19 +15,20 @@ interface ResumeViewerProps {
 
 export default function ResumeViewer({ initialData, resumeId }: ResumeViewerProps) {
   return (
-    <RoomProvider id={`resume-${resumeId}`} initialPresence={{}} initialStorage={initialData}>
-      <ResumeViewerContent initialData={initialData} resumeId={resumeId} />
-    </RoomProvider>
+    <VeltDocumentProvider documentId={`resume-${resumeId}`} initialState={initialData}>
+      <ResumeViewerContent resumeId={resumeId} />
+    </VeltDocumentProvider>
   )
 }
 
-function ResumeViewerContent({ initialData, resumeId }: { initialData: ResumeData; resumeId: string }) {
-  const [profile, setProfile] = useState<EnrichedProfile>(initialData.profile)
-  const [theme, setTheme] = useState<ResumeTheme>(initialData.theme)
-  const [settings, setSettings] = useState(initialData.settings)
+function ResumeViewerContent({ resumeId }: { resumeId: string }) {
+  const { state, update } = useDocument(`resume-${resumeId}`)
+  const profile = state.profile
+  const theme = state.theme
+  const settings = state.settings
   const [isSaving, setIsSaving] = useState(false)
 
-  // Set up Supabase realtime subscription
+  // Supabase realtime subscription remains
   useEffect(() => {
     const channel = supabase
       .channel(`resume-${resumeId}`)
@@ -40,20 +41,20 @@ function ResumeViewerContent({ initialData, resumeId }: { initialData: ResumeDat
           filter: `public_identifier=eq.${resumeId}`,
         },
         (payload) => {
-          console.log("Resume updated:", payload)
           if (payload.new) {
-            setProfile(payload.new.profile_data)
-            setTheme(payload.new.theme_data)
-            setSettings(payload.new.settings)
+            update({
+              profile: payload.new.profile_data,
+              theme: payload.new.theme_data,
+              settings: payload.new.settings,
+            })
           }
         },
       )
       .subscribe()
-
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [resumeId])
+  }, [resumeId, update])
 
   const saveToSupabase = async (updatedData: Partial<ResumeData>) => {
     setIsSaving(true)
@@ -64,7 +65,6 @@ function ResumeViewerContent({ initialData, resumeId }: { initialData: ResumeDat
         settings,
         ...updatedData,
       }
-
       await ResumeService.saveResume(resumeId, currentData)
     } catch (error) {
       console.error("Error saving to Supabase:", error)
@@ -75,32 +75,40 @@ function ResumeViewerContent({ initialData, resumeId }: { initialData: ResumeDat
 
   const handleProfileUpdate = async (updates: Partial<EnrichedProfile>) => {
     const updatedProfile = { ...profile, ...updates }
-    setProfile(updatedProfile)
-
+    update({
+      profile: updatedProfile,
+      settings: { ...settings, lastModified: new Date().toISOString() },
+    })
     await saveToSupabase({
       profile: updatedProfile,
-      settings: {
-        ...settings,
-        lastModified: new Date().toISOString(),
-      },
+      settings: { ...settings, lastModified: new Date().toISOString() },
     })
   }
 
   const handleThemeChange = async (newTheme: ResumeTheme) => {
-    setTheme(newTheme)
+    update({ theme: newTheme })
     await saveToSupabase({ theme: newTheme })
   }
 
   const handleLinkedInSync = () => {
-    // This would trigger a re-sync with EnrichLayer
-    console.log("LinkedIn sync triggered - would call EnrichLayer API again")
     alert("LinkedIn sync would re-fetch your latest LinkedIn data and update the resume!")
   }
 
   const toggleEditMode = async () => {
     const newSettings = { ...settings, isEditMode: !settings.isEditMode }
-    setSettings(newSettings)
+    update({ settings: newSettings })
     await saveToSupabase({ settings: newSettings })
+  }
+
+  if (!profile || !theme || !settings) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading resume...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -122,7 +130,6 @@ function ResumeViewerContent({ initialData, resumeId }: { initialData: ResumeDat
         />
       </div>
 
-      {/* Save indicator */}
       {isSaving && (
         <div className="fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">Saving...</div>
       )}

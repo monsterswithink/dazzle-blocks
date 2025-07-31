@@ -1,22 +1,45 @@
-1) [CLONE REPO]: https://github.com/monsterswithink/dazzle-blocks/tree/main
-2) [CODE GUIDE]: nextjs, tailwindcss4, shadcn/ui, app router, *not* './src' base url, liveblocks+tiptap editor provider, supabase as backend for fetching profile data, next-auth using @auth/core via authjs.dev for auth, fetching {vanityUrl} from session headers, use EnrichLayer API to scrape linkedin profile which requires linkedin URL--which we pass from the session data, user then routed to Profile page which displays a snapshot profile card --this is also the moment the EnrichLayer which scrapes linkedin in the background and returns a JSON response thats always dynamic and possibly null with the exception of the public_identifier field, we then store that in supabase, then load that into the resume-editor as blocks using liveblocks.  We store all enrichlayer profile types in ./types/resume.ts
-3) [UPDATE]: Replace liveblocks provider with Velt → https://docs.velt.dev/get-started/quickstart
-4) [OBJECTIVE]: This is Dazzle. A resume builder you never have to touch as it syncs with your linkedin profile one-to-one exactly and the second you change anything on linkedin. Change it in one place and no more sharing some hand made resume. . Create a one-to-one linkedin to resume builder where the user only ever has to manage their resume by updating linkedin.
-[FEATURES]:
-   is is made for two audiences: 1) the recruiter, 2) the candidate
-#CANDIDATE:
-- toolbar: this will include a floating 'vercel' style editor toolbar that remains a fixed floating toolbar above the resume editor. Use icon buttons only
--- include a dropdown / drop "up" menu i suppose that displays different themes they can select from based on job role type, such as: product (design), developer, industrial (minimal crisp clean), data analyst, manager, and others you can think of, which when selected will change the entire resume theme, colors, fonts, etc
-- top toolbar: a toggle somewhere to enable 'Super Dazzle': this is a generative Ai text completion feature that should trigger a pricing upgrade pop up modal to upgrade for $9.95. Once this is toggled on, there will be a new icon button in the floating toolbar that simply displays an animated loader with an icon in the center of the loader, such as a lightning bolt. This is basically my ML model doing its work to match the candidate to the best job.
--top →floating toolbar: edit mode button: also triggers the upgrade modal, but once upgraded, all fields become input fields to manually enter text into
-A 'sync from LinkedIn' button with a rate limited value in the button of max (3) per day, beyond that is upgrade again
-- top toolbar: include a share profile url which will create a shortened permalink share code and QR code snapshot of their URL
-- top: print icon button
-#RECRUITER: they will see an interactive, shareable version of a resume that for the first time, allows them to print, share, copy the url, and look at a resume that allows them to view a snapshot first, with experiences using collapsable sections that use faded out gradient masks to show mere glimpses of some content, which they can select to expand. The skills, and everything else relevant to a resume regarding quick glance data will be displayed in beautiful graphs and translated that way for the candidate automatically.
-
-[THE FIELDS]: ```
-Got it. Here’s the entire schema in one line, with all string values set to "", all nulls removed, no newlines, and integers preserved:
-
-{"public_identifier":"","profile_pic_url":"","background_cover_image_url":"","first_name":"","last_name":"","full_name":"","follower_count":0,"occupation":"","headline":"","summary":"","country":"","country_full_name":"","city":"","state":"","experiences":[{"starts_at":{"day":0,"month":0,"year":0},"ends_at":{"day":0,"month":0,"year":0},"company":"","company_linkedin_profile_url":"","company_facebook_profile_url":"","title":"","description":"","location":"","logo_url":""}],"education":[],"languages":[],"languages_and_proficiencies":[],"accomplishment_organisations":[],"accomplishment_publications":[],"accomplishment_honors_awards":[],"accomplishment_patents":[],"accomplishment_courses":[],"accomplishment_projects":[],"accomplishment_test_scores":[],"volunteer_work":[],"certifications":[],"connections":0,"people_also_viewed":[],"recommendations":[""],"activities":[{"title":"","link":"","activity_status":""}],"similarly_named_profiles":[{"name":"","link":"","summary":"","location":""}],"articles":[{"title":"","link":"","published_date":{"day":0,"month":0,"year":0},"author":"","image_url":""}],"groups":[],"skills":[],"inferred_salary":{"min":0,"max":0},"gender":"","birth_date":"","industry":"","extra":{"github_profile_id":"","facebook_profile_id":"","twitter_profile_id":"","website":""},"interests":[],"personal_emails":[],"personal_numbers":[],"meta":{"last_updated":""}}
-
-Let me know if you want it minified further, alphabetized, or converted to a TypeScript type.```
+1.	[CLONE REPO]
+→ https://github.com/monsterswithink/dazzle-blocks/tree/main
+	2.	[CODE BASELINE]
+	•	Frameworks: Next.js (App Router), Tailwind CSS v4, shadcn/ui, no './src' alias
+	•	Collab: Liveblocks + Tiptap (✖️ replace w/ Velt → https://docs.velt.dev/get-started/quickstart)
+	•	Auth: NextAuth via @auth/core (authjs.dev) ✅ — do not modify
+	•	Data Layer: Supabase (for enriched profile storage)
+	•	Session pulls vanityUrl → used to call EnrichLayer API (scrapes LinkedIn)
+	•	JSON from EnrichLayer is persisted in Supabase, parsed via types from ./types/resume.ts, and injected as Liveblocks blocks into the resume editor.
+	3.	[TASK SCOPE]
+🎯 DO NOT TOUCH any logic or routing involving session, auth, r_basicprofile, LinkedIn OAuth, or EnrichLayer scraping flow.
+✅ You are only finishing the Resume Toolbar UX.
+	4.	[TOOLBAR: CANDIDATE VIEW]
+	•	A floating fixed-position toolbar (like Vercel’s) above the resume editor.
+	•	Icon-only buttons, clean & minimal.
+Features:
+	•	🎨 Theme selector dropdown — open up or drop-up menu
+	•	Themes styled by job type:
+product, developer, industrial, data, manager, creative, etc
+	•	Theme changes: apply fonts, colors, layout — no reload
+	•	⚡ “Super Dazzle” toggle (top toolbar)
+	•	Triggers pricing modal ($9.95 upgrade)
+	•	Once active, adds button: animated loader (⚡ in center)
+	•	Calls ML matching → candidate-to-role suggestions
+	•	✏️ Edit Mode Toggle
+	•	Also triggers pricing modal
+	•	Enables in-place content editing on all fields
+	•	🔄 Sync from LinkedIn button
+	•	Hard limit: 3 syncs/day (after that, show upgrade modal)
+	•	Button shows counter (3/3) style
+	•	🔗 Share — generates:
+	•	short permalink URL
+	•	QR snapshot preview
+	•	🖨️ Print resume — clean printable layout
+	5.	[TOOLBAR: RECRUITER VIEW]
+	•	Read-only
+	•	Shareable + printable
+	•	Collapsible experience blocks
+	•	Faded gradient masks over truncated content
+	•	Skills & highlights rendered as beautiful data visuals (charts, graphs)
+	•	First-glance scan UX over traditional list layout
+	6.	[DATA FORMAT]
+All resume/profile data conforms to the flat EnrichLayer → Supabase schema:
+(📦 Already typed in ./types/resume.ts)
+Here’s the minified JSON baseline:

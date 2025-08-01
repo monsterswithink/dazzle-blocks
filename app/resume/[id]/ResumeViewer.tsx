@@ -1,32 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { VeltDocumentProvider, useDocument } from "@veltdev/react"
+import { useVeltRoom, useVeltState } from "@veltdev/react"
 import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import { ResumeService, type ResumeData } from "@/lib/resume-service"
 import { supabase } from "@/lib/supabase"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
-interface ResumeViewerProps {
-  initialData: ResumeData
-  resumeId: string
-}
 
-export default function ResumeViewer({ initialData, resumeId }: ResumeViewerProps) {
-  return (
-    <VeltDocumentProvider documentId={`resume-${resumeId}`} initialState={initialData}>
-      <ResumeViewerContent resumeId={resumeId} />
-    </VeltDocumentProvider>
-  )
-}
 
-function ResumeViewerContent({ resumeId }: { resumeId: string }) {
-  const { state, update } = useDocument(`resume-${resumeId}`)
-  const profile = state.profile
-  const theme = state.theme
-  const settings = state.settings
-  const [isSaving, setIsSaving] = useState(false)
+export default function ResumeViewer({ initialData, resumeId }) {
+  // Join the Velt room for this resume
+  const { isConnected } = useVeltRoom({ roomId: `resume-${resumeId}` })
+
+  // Shared state (like Liveblocks' useStorage)
+  const [profile, setProfile] = useVeltState("profile", initialData.profile)
+  const [theme, setTheme] = useVeltState("theme", initialData.theme)
+  const [settings, setSettings] = useVeltState("settings", initialData.settings)
 
   // Supabase realtime subscription remains
   useEffect(() => {

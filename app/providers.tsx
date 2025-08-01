@@ -8,7 +8,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const veltApiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
   return (
     <SessionProvider>
-      <VeltProvider apiKey={veltApiKey}>{children}</VeltProvider>
+      <VeltProvider apiKey={VELT_API_KEY}>{children}</VeltProvider>
     </SessionProvider>
   )
 }

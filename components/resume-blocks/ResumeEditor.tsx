@@ -6,10 +6,9 @@ import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
-function ResumeEditorContent({ documentId, initialStorage }: { documentId: string, initialStorage: any }) {
-  // Velt's hook for collaborative state
+function ResumeEditorContent({ documentId, initialStorage }: { documentId: string; initialStorage: any }) {
   const { state, update } = useVeltDocument(documentId, {
-    initialState: initialStorage
+    initialState: initialStorage,
   })
 
   const profile = state.profile

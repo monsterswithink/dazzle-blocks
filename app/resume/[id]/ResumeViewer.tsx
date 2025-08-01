@@ -1,25 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useVeltRoom, useVeltState } from "@veltdev/react"
+import { useEffect, useCallback } from "react"
+import { useSetDocument, useDocument } from "@veltdev/react"
 import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import { ResumeService, type ResumeData } from "@/lib/resume-service"
 import { supabase } from "@/lib/supabase"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
+export default function ResumeViewer({ initialData, resumeId }: { initialData: ResumeData, resumeId: string }) {
+  // 1. Register this document with Velt for collaboration
+  useSetDocument(
+    initialData
+      ? { id: `resume-${resumeId}`, initialState: initialData }
+      : null
+  )
 
+  // 2. Use Velt collaborative document state
+  const { state, update } = useDocument<ResumeData>()
 
-export default function ResumeViewer({ initialData, resumeId }) {
-  // Join the Velt room for this resume
-  const { isConnected } = useVeltRoom({ roomId: `resume-${resumeId}` })
-
-  // Shared state (like Liveblocks' useStorage)
-  const [profile, setProfile] = useVeltState("profile", initialData.profile)
-  const [theme, setTheme] = useVeltState("theme", initialData.theme)
-  const [settings, setSettings] = useVeltState("settings", initialData.settings)
-
-  // Supabase realtime subscription remains
+  // 3. Supabase realtime subscription (to update Velt state if db changes externally)
   useEffect(() => {
     const channel = supabase
       .channel(`resume-${resumeId}`)
@@ -47,32 +47,26 @@ export default function ResumeViewer({ initialData, resumeId }) {
     }
   }, [resumeId, update])
 
-  const saveToSupabase = async (updatedData: Partial<ResumeData>) => {
-    setIsSaving(true)
-    try {
-      const currentData: ResumeData = {
-        profile,
-        theme,
-        settings,
-        ...updatedData,
-      }
-      await ResumeService.saveResume(resumeId, currentData)
-    } catch (error) {
-      console.error("Error saving to Supabase:", error)
-    } finally {
-      setIsSaving(false)
+  // 4. Save to Supabase on change
+  const saveToSupabase = useCallback(async (updatedData: Partial<ResumeData>) => {
+    const currentData: ResumeData = {
+      profile: state.profile,
+      theme: state.theme,
+      settings: state.settings,
+      ...updatedData,
     }
-  }
+    await ResumeService.saveResume(resumeId, currentData)
+  }, [resumeId, state.profile, state.theme, state.settings])
 
+  // 5. Editing handlers update Velt state and persist
   const handleProfileUpdate = async (updates: Partial<EnrichedProfile>) => {
-    const updatedProfile = { ...profile, ...updates }
     update({
-      profile: updatedProfile,
-      settings: { ...settings, lastModified: new Date().toISOString() },
+      profile: { ...state.profile, ...updates },
+      settings: { ...state.settings, lastModified: new Date().toISOString() },
     })
     await saveToSupabase({
-      profile: updatedProfile,
-      settings: { ...settings, lastModified: new Date().toISOString() },
+      profile: { ...state.profile, ...updates },
+      settings: { ...state.settings, lastModified: new Date().toISOString() },
     })
   }
 
@@ -81,17 +75,18 @@ export default function ResumeViewer({ initialData, resumeId }) {
     await saveToSupabase({ theme: newTheme })
   }
 
-  const handleLinkedInSync = () => {
-    alert("LinkedIn sync would re-fetch your latest LinkedIn data and update the resume!")
-  }
-
   const toggleEditMode = async () => {
-    const newSettings = { ...settings, isEditMode: !settings.isEditMode }
+    const newSettings = { ...state.settings, isEditMode: !state.settings.isEditMode }
     update({ settings: newSettings })
     await saveToSupabase({ settings: newSettings })
   }
 
-  if (!profile || !theme || !settings) {
+  const handleLinkedInSync = () => {
+    alert("LinkedIn sync handled elsewhere!")
+  }
+
+  // 6. Loading state
+  if (!state.profile || !state.theme || !state.settings) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -102,28 +97,24 @@ export default function ResumeViewer({ initialData, resumeId }) {
     )
   }
 
+  // 7. Collaborative UI
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <ResumeDisplay
-        profile={profile}
-        theme={theme}
-        isEditMode={settings.isEditMode}
+        profile={state.profile}
+        theme={state.theme}
+        isEditMode={state.settings.isEditMode}
         onProfileUpdate={handleProfileUpdate}
       />
-
       <div data-floating-toolbar>
         <FloatingToolbar
-          isEditMode={settings.isEditMode}
+          isEditMode={state.settings.isEditMode}
           onToggleEdit={toggleEditMode}
           onThemeChange={handleThemeChange}
           onLinkedInSync={handleLinkedInSync}
-          currentTheme={theme}
+          currentTheme={state.theme}
         />
       </div>
-
-      {isSaving && (
-        <div className="fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">Saving...</div>
-      )}
     </div>
   )
 }

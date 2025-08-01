@@ -7,6 +7,23 @@ import { Palette, Share, Edit3, Linkedin, Check } from "lucide-react"
 import type { ResumeTheme } from "@/types/profile"
 import { SharePopover } from "@/resume-tools/SharePopover"
 
+function expandAllAccordionsForPrint() {
+  // Expand all accordions with a print class
+  document.querySelectorAll('[data-accordion]').forEach(el => {
+    if (el instanceof HTMLElement) el.setAttribute('open', 'true')
+  })
+}
+function restoreAccordionsAfterPrint() {
+  // Optionally, reset to default state if you want
+}
+function handlePrint() {
+  expandAllAccordionsForPrint()
+  setTimeout(() => {
+    window.print()
+    setTimeout(restoreAccordionsAfterPrint, 500)
+  }, 100)
+}
+
 interface FloatingToolbarProps {
   isEditMode: boolean
   onToggleEdit: () => void
@@ -92,7 +109,15 @@ export function FloatingToolbar({
         </Button>
 
         <div className="w-px h-6 bg-gray-300" />
-
+<Button
+  variant="ghost"
+  size="sm"
+  className="rounded-full"
+  onClick={handlePrint}
+  aria-label="Print Resume"
+>
+  <Printer className="h-4 w-4" />
+</Button>
         {/* LinkedIn Sync */}
         <Button
           variant="ghost"

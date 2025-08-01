@@ -1,63 +1,59 @@
 "use client"
+
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
-import { ResumeService } from "@/lib/resume-service"
-import { ProfileSnapshotCard } from "@/resume-blocks/ProfileSnapshotCard"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<any>(null)
-  const [resumeId, setResumeId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    async function fetchAndEnrich() {
-      setLoading(true)
-      if (!session?.accessToken) {
-        setLoading(false)
-        return
-      }
-
-      // 1. Fetch LinkedIn profile for vanityName/id
-      const res = await fetch("/api/profile", {
+    if (session?.accessToken) {
+      fetch("/api/profile", {
         headers: { Authorization: `Bearer ${session.accessToken}` },
       })
-      const linkedInProfile = await res.json()
-      const vanityName = linkedInProfile.vanityName || linkedInProfile.id
-
-      // 2. Try to fetch resume from Supabase
-      let resume = await ResumeService.getResumeByPublicId(vanityName)
-      if (!resume) {
-        // 3. If not, enrich and save
-        setSyncing(true)
-        const enr = await fetch(`/api/enrich?vanityName=${vanityName}`)
-        const enrichedData = await enr.json()
-        await ResumeService.createResumeFromEnrichedData(enrichedData)
-        resume = await ResumeService.getResumeByPublicId(vanityName)
-        setSyncing(false)
-      }
-
-      setProfile(resume?.profile)
-      setResumeId(resume?.profile?.public_identifier)
-      setLoading(false)
+        .then((res) => res.json())
+        .then((data) => setProfile(data))
+        .catch((err) => setError("Failed to load profile"))
     }
-    fetchAndEnrich()
   }, [session])
 
-  const handleViewResume = () => {
-    if (resumeId) window.location.assign(`/resume/${resumeId}`)
+  const handleEnrich = async () => {
+    if (!profile?.vanityName) {
+      alert("Missing vanityName")
+      return
+    }
+
+    const res = await fetch(`/api/enrich?vanityName=${profile.vanityName}`)
+    if (!res.ok) {
+      alert("Failed to fetch enriched profile")
+      return
+    }
+
+    const enrichedData = await res.json()
+    // Save in local storage or sessionStorage (quick and dirty way to pass data)
+    sessionStorage.setItem("enrichedProfile", JSON.stringify(enrichedData))
+    router.push("/profile/enriched")
   }
 
+  if (status === "loading") return <p>Loading session...</p>
+  if (!session) return <p>Please sign in to view your LinkedIn profile</p>
+  if (error) return <p>{error}</p>
+  if (!profile) return <p>Loading profile data...</p>
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <ProfileSnapshotCard
-        profile={profile}
-        syncing={syncing}
-        onViewResume={handleViewResume}
-        resumeId={resumeId || undefined}
-        loading={loading}
-      />
+    <div>
+      <h1>LinkedIn Profile</h1>
+      <p>
+        Name: {profile.localizedFirstName} {profile.localizedLastName}
+      </p>
+      <p>Headline: {profile.localizedHeadline}</p>
+      <button onClick={handleEnrich} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Enrich Profile with EnrichLayer →
+      </button>
     </div>
   )
 }

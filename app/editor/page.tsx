@@ -1,4 +1,4 @@
-import ResumeEditor from "@/resume-blocks/ResumeEditor"
+import ResumeEditor from "../../resume-editor"
 
 export default function EditorPage() {
   return <ResumeEditor />

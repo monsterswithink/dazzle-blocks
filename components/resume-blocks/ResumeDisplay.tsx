@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { Mail, Linkedin, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { GenericCollapsibleBlock } from "@/resume-blocks/GenericCollapsibleBlock"
+import { CollapsibleSection } from "@/resume-blocks/CollapsibleSection"
 import { SkillsChart } from "@/resume-blocks/Skills"
 import { EditableText } from "@/resume-blocks/EditableText"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"

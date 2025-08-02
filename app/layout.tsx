@@ -1,27 +1,20 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "#styles"
-import { Providers } from "@/app/providers"
+"use client"
+  
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "#styles";
+import P from "@auth/nextjs";
+import { ThemeProvider } from "next-themes";
+import { ClientProviders } from "@/app/providers";
+import {SessionProvider} from "@/app/providers"
 
-const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "LinkedIn Resume Sync",
-  description: "Sync your LinkedIn profile to create beautiful, collaborative resumes",
-    generator: 'v0.dev'
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <SessionProvider><ClientProviders>{children}</ClientProviders> </SessionProvider>
       </body>
     </html>
-  )
+  );
 }

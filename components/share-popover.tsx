@@ -3,9 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover"
-import { Button } from "@/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { QrCode, Printer, Download, Copy, Check } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ResumeService } from "@/lib/resume-service"
-import { Button } from "@/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, ExternalLink, Loader2 } from "lucide-react"
 
 export default function EnrichedProfilePage() {
@@ -45,8 +45,12 @@ export default function EnrichedProfilePage() {
   }
 
   const handleViewResume = () => {
+    console.log("Resume ID:", resumeId) // Debug log
     if (resumeId) {
       router.push(`/resume/${resumeId}`)
+    } else {
+      console.error("No resume ID available")
+      alert("Resume ID not found. Please try creating the resume again.")
     }
   }
 

@@ -46,7 +46,6 @@
     "@tiptap/pm": "latest",
     "@tiptap/react": "latest",
     "@tiptap/starter-kit": "latest",
-    "@types/react-dom": "^18",
     "@velt/react": "latest",
     "@veltdev/react": "latest",
     "@vercel/analytics": "latest",

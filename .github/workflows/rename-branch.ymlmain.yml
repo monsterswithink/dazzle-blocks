@@ -1,0 +1,53 @@
+name: Rename Current Branch → {PROVIDER}_%nn
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rename-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for full branch list
+
+      - name: Get current branch
+        id: current
+        run: |
+          ref=$(git rev-parse --abbrev-ref HEAD)
+          echo "branch=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Extract BRANCH_PROVIDER
+        id: provider
+        run: |
+          provider=$(grep -oP 'BRANCH_PROVIDER="\K[^"]+' ./instructions/providerBranch.md)
+          echo "provider=$provider" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next branch name
+        id: next
+        run: |
+          prefix="${{ steps.provider.outputs.provider }}_"
+          existing=$(git ls-remote --heads origin "$prefix*" | sed -E "s#.*/${prefix}##" | sort)
+          max=0
+          while read -r line; do
+            num=$(echo "$line" | sed 's/^0*//')
+            [[ $num =~ ^[0-9]+$ ]] && (( num > max )) && max=$num
+          done <<< "$existing"
+          next_num=$(printf "%02d" $((max + 1)))
+          next_branch="${prefix}${next_num}"
+          echo "next=$next_branch" >> "$GITHUB_OUTPUT"
+
+      - name: Rename branch locally
+        run: |
+          git branch -m "${{ steps.current.outputs.branch }}" "${{ steps.next.outputs.next }}"
+
+      - name: Push renamed branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git push origin "${{ steps.next.outputs.next }}"
+          git push origin --delete "${{ steps.current.outputs.branch }}"

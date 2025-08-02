@@ -5,7 +5,6 @@ import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import { useRoom } from "@veltdev/react"
-import Velt from "velt"
 import type { JSX } from "react/jsx-runtime" // Import JSX to fix the undeclared variable error
 
 interface EditableTextProps {
@@ -57,11 +56,11 @@ export function EditableText({
   useEffect(() => {
     if (editor && room) {
       // Initialize Velt for this specific editor instance
-      Velt.initEditor(editor, editorId)
+      initEditor(editor, editorId)
 
       // Clean up Velt editor instance on unmount
       return () => {
-        Velt.destroyEditor(editorId)
+        destroyEditor(editorId)
       }
     }
   }, [editor, room, editorId])

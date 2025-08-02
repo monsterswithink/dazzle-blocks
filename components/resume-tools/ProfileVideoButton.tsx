@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Video, StopCircle, PlayCircle, Loader2 } from "lucide-react"
-import { useRoom } from "@velt/react"
+import { useRoom } from "@veltdev/react"
 import { Velt } from "velt"
 import { useToast } from "@/components/ui/use-toast"
 

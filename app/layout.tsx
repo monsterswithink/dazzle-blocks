@@ -12,16 +12,15 @@ export const metadata: Metadata = {
     generator: 'v0.dev'
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
-      </body>
-    </html>
+    <SessionProvider>
+      <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_API_KEY!}>
+        {children}
+        <VeltAuthBridge />
+        {/** whenever you switch document: */}
+        <VeltDocSetter documentId={'some-document-id'} />
+      </VeltProvider>
+    </SessionProvider>
   )
 }

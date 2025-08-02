@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase"
 import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
 import { initialResumeData } from "@/public/data/initial-resume-data"
 import { VeltProvider } from "@/components/resume-providers/Velt"
-import { VeltClient } from "velt"
 
 export default async function EditorPage() {
   const session = await auth()

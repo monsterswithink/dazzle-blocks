@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, LineChart, PieChart } from "lucide-react"
 import { ResponsiveContainer, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Pie, Cell } from "recharts"
-import { useRoom } from "@velt/react"
+import { useRoom } from "@velt/sdk"
 import { useEffect, useState } from "react"
 
 // Dummy data for demonstration

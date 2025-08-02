@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import ClientLayout from "./ClientLayout"
+import { VeltProvider } from "@velt/react"
 
 export const metadata: Metadata = {
   title: "Liveblocks Resume Editor",
@@ -13,7 +14,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <ClientLayout>{children}</ClientLayout>
+  return <VeltProvider><ClientLayout>{children}</ClientLayout></VeltProvider>
 }
 
 

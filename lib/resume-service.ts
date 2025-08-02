@@ -57,7 +57,15 @@ export class ResumeService {
 
   static async createResumeFromEnrichedData(enrichedData: any): Promise<string | null> {
     try {
-      const publicId = enrichedData.public_identifier
+      // Make sure we have a valid public_identifier
+      const publicId = enrichedData.public_identifier || enrichedData.id
+
+      if (!publicId) {
+        console.error("No public_identifier found in enriched data:", enrichedData)
+        return null
+      }
+
+      console.log("Creating resume with public ID:", publicId) // Debug log
 
       const resumeData: ResumeData = {
         profile: enrichedData,

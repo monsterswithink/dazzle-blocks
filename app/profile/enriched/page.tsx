@@ -45,8 +45,12 @@ export default function EnrichedProfilePage() {
   }
 
   const handleViewResume = () => {
+    console.log("Resume ID:", resumeId) // Debug log
     if (resumeId) {
       router.push(`/resume/${resumeId}`)
+    } else {
+      console.error("No resume ID available")
+      alert("Resume ID not found. Please try creating the resume again.")
     }
   }
 

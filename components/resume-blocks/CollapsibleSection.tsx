@@ -1,62 +1,32 @@
 "use client"
 
 import * as React from "react"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/accordion"
+import { ChevronDown } from "lucide-react"
 
-export function GenericAccordion({
-  items,
-  titleKey = "title",
-  subtitleKey = "company",
-  defaultOpen = false,
-  printExpand = false,
-}: {
-  items: any[],
-  titleKey?: string,
-  subtitleKey?: string,
-  defaultOpen?: boolean,
-  printExpand?: boolean,
-}) {
-  const [openIndexes, setOpenIndexes] = React.useState<number[]>(() =>
-    defaultOpen ? items.map((_, i) => i) : []
-  )
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
-  React.useEffect(() => {
-    if (printExpand) {
-      setOpenIndexes(items.map((_, i) => i))
-    }
-  }, [printExpand, items.length])
+interface CollapsibleSectionProps {
+  title: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}
+
+export function CollapsibleSection({ title, children, defaultOpen = true }: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen)
 
   return (
-    <Accordion
-      type="multiple"
-      value={openIndexes.map(String)}
-      onValueChange={(values: string[]) =>
-        setOpenIndexes(values.map(Number))
-      }
-      className={printExpand ? "print:block" : ""}
-    >
-      {items.map((item, i) => (
-        <AccordionItem key={i} value={String(i)}>
-          <AccordionTrigger>
-            <div>
-              <div className="font-semibold">{item[titleKey] || `Item ${i + 1}`}</div>
-              {subtitleKey && item[subtitleKey] && (
-                <div className="text-xs text-muted-foreground">{item[subtitleKey]}</div>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {Object.entries(item).map(([k, v]) => (
-                <React.Fragment key={k}>
-                  <dt className="font-medium">{k}</dt>
-                  <dd className="truncate text-sm">{typeof v === "object" && v !== null ? JSON.stringify(v) : String(v)}</dd>
-                </React.Fragment>
-              ))}
-            </dl>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full space-y-2">
+      <div className="flex items-center justify-between space-x-4 px-4">
+        <h4 className="text-lg font-semibold">{title}</h4>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="w-9 p-0">
+            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            <span className="sr-only">Toggle</span>
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+      <CollapsibleContent className="space-y-2 px-4 pb-4">{children}</CollapsibleContent>
+    </Collapsible>
   )
 }

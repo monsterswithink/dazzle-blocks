@@ -1,143 +1,228 @@
-// ---- sanity-checks -------------------------------------------------
-// if (process.env.NODE_ENV !== "production") {
-//   const secret = process.env.NEXTAUTH_SECRET ?? ""
-//   const url = process.env.NEXTAUTH_URL ?? ""
+import LinkedIn from "next-auth/providers/linkedin"
+import { supabase } from "./supabase"
+import { handlers } from "@auth/nextjs"
 
-//   if (secret.length < 32) {
-//     // eslint-disable-next-line no-console
-//     console.error(
-//       "[config] NEXTAUTH_SECRET must be at least 32 random characters.\n" +
-//         "Generate one with:  openssl rand -base64 32",
-//     )
-//   }
-//   if (!/^https?:\/\//.test(url)) {
-//     // eslint-disable-next-line no-console
-//     console.error(
-//       "[config] NEXTAUTH_URL must start with http:// or https://\n" + `Current value: "${url || "(not set)"}"`,
-//     )
-//   }
-// }
-// --------------------------------------------------------------------
-// V1 THAT RETURNED THE PROVIDER ID ONLY
-// import type { NextAuthOptions } from "next-auth"
-// import LinkedInProvider from "next-auth/providers/linkedin"
+// Extend the Session and User types to include custom fields like vanityUrl
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      vanityUrl?: string | null // Add vanityUrl to the user object
+    }
+  }
 
-// export const authOptions: NextAuthOptions = {
-//   secret: process.env.NEXTAUTH_SECRET,
-//   debug: true, // Enable debug logging
-//   providers: [
-//     LinkedInProvider({
-//       clientId: process.env.LINKEDIN_CLIENT_ID!,
-//       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-//       authorization: {
-//         params: {
-//           scope: "r_liteprofile r_basicprofile",
-//         },
-//       },
-//       // Simplified profile mapping to avoid parsing errors
-//       profile(profile: any) {
-//         console.log("LinkedIn profile data:", profile) // Debug log
+  interface User {
+    vanityUrl?: string | null
+  }
+}
 
-//         return {
-//           id: profile.id || "unknown",
-//           name: profile.localizedFirstName || "Unknown User",
-//           email: profile.emailAddress || null,
-//           image: null, // Simplified - remove complex image parsing
-//           linkedinId: profile.id || "unknown",
-//           vanityUrl: profile.vanityName || null,
-//         }
-//       },
-//     }),
-//   ],
-//   callbacks: {
-//     async jwt({ token, account, profile, user }) {
-//       console.log("JWT callback:", { token, account, profile, user }) // Debug log
-
-//       if (account && profile) {
-//         token.linkedinId = profile.id
-//         token.vanityUrl = (profile as any).vanityName || null
-//       }
-//       return token
-//     },
-//     async session({ session, token }) {
-//       console.log("Session callback:", { session, token }) // Debug log
-
-//       return {
-//         ...session,
-//         user: {
-//           ...session.user,
-//           linkedinId: token.linkedinId,
-//           vanityUrl: token.vanityUrl,
-//         },
-//       }
-//     },
-//     async signIn({ user, account, profile }) {
-//       console.log("SignIn callback:", { user, account, profile }) // Debug log
-//       return true
-//     },
-//   },
-//   pages: {
-//     signIn: "/",
-//     error: "/auth/error",
-//   },
-//   session: {
-//     strategy: "jwt",
-//   },
-// }
-// V2 ATTEMPT WITH SCOPES
-import LinkedInProvider from "next-auth/providers/linkedin"
-import type { NextAuthOptions } from "next-auth"
-
-export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+export const authConfig = {
   providers: [
-    LinkedInProvider({
-      clientId: process.env.LINKEDIN_CLIENT_ID!,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "r_basicprofile",
-        },
-      },
-      userinfo: {
-        url: "https://api.linkedin.com/v2/me",
-        params: {
-          projection:
-            "(id,firstName,lastName,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))",
-        },
-      },
+    LinkedIn({
+      clientId: process.env.LINKEDIN_CLIENT_ID,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
       profile(profile) {
+        // You might need to inspect the full profile object returned by LinkedIn
+        // to find the correct field for vanityUrl or public profile URL.
+        // This is an example based on common LinkedIn profile structures.
+        const vanityUrlMatch = profile.vanityName || profile.public_profile_url?.split("/").pop()
+
         return {
-          id: profile.id,
-          name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
-          email: null,
-          image: profile.profilePicture?.["displayImage~"]?.elements?.[0]?.identifiers?.[0]?.identifier || null,
-          linkedinId: profile.id,
-          profileUrl: `https://www.linkedin.com/in/${profile.id}`,
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          vanityUrl: vanityUrlMatch || null,
         }
       },
     }),
   ],
+  adapter: {
+    // Example using Supabase as a database for Auth.js.
+    // You would need to set up your Supabase client and schema.
+    // For a simple setup without a database, you can remove the adapter.
+    createUser: async (data) => {
+      const { data: newUser, error } = await supabase
+        .from("users")
+        .insert([
+          {
+            email: data.email,
+            name: data.name,
+            image: data.image,
+            // Add other fields from data if your users table supports them
+          },
+        ])
+        .select()
+        .single()
+
+      if (error) throw error
+      return newUser
+    },
+    getUser: async (id) => {
+      const { data: user, error } = await supabase.from("users").select("*").eq("id", id).single()
+      if (error && error.code !== "PGRST116") throw error // PGRST116 means "no rows found"
+      return user
+    },
+    getUserByEmail: async (email) => {
+      const { data: user, error } = await supabase.from("users").select("*").eq("email", email).single()
+      if (error && error.code !== "PGRST116") throw error
+      return user
+    },
+    getUserByAccount: async ({ providerAccountId, provider }) => {
+      const { data: account, error: accountError } = await supabase
+        .from("accounts")
+        .select("userId")
+        .eq("provider", provider)
+        .eq("providerAccountId", providerAccountId)
+        .single()
+
+      if (accountError && accountError.code !== "PGRST116") throw accountError
+      if (!account) return null
+
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", account.userId)
+        .single()
+
+      if (userError && userError.code !== "PGRST116") throw userError
+      return user
+    },
+    updateUser: async (data) => {
+      const { data: updatedUser, error } = await supabase
+        .from("users")
+        .update({
+          name: data.name,
+          email: data.email,
+          image: data.image,
+          emailVerified: data.emailVerified,
+        })
+        .eq("id", data.id)
+        .select()
+        .single()
+      if (error) throw error
+      return updatedUser
+    },
+    deleteUser: async (id) => {
+      await supabase.from("users").delete().eq("id", id)
+      return null // Adapter expects null or the deleted user
+    },
+    linkAccount: async (account) => {
+      const { data: newAccount, error } = await supabase
+        .from("accounts")
+        .insert([
+          {
+            userId: account.userId,
+            type: account.type,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            refresh_token: account.refresh_token,
+            access_token: account.access_token,
+            expires_at: account.expires_at,
+            id_token: account.id_token,
+            scope: account.scope,
+            session_state: account.session_state,
+            token_type: account.token_type,
+          },
+        ])
+        .select()
+        .single()
+      if (error) throw error
+      return newAccount
+    },
+    unlinkAccount: async ({ providerAccountId, provider }) => {
+      await supabase.from("accounts").delete().eq("provider", provider).eq("providerAccountId", providerAccountId)
+      return undefined // Adapter expects undefined or the unlinked account
+    },
+    createSession: async (data) => {
+      const { data: newSession, error } = await supabase
+        .from("sessions")
+        .insert([
+          {
+            userId: data.userId,
+            expires: data.expires,
+            sessionToken: data.sessionToken,
+          },
+        ])
+        .select()
+        .single()
+      if (error) throw error
+      return newSession
+    },
+    getSessionAndUser: async (sessionToken) => {
+      const { data: session, error: sessionError } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("sessionToken", sessionToken)
+        .single()
+
+      if (sessionError && sessionError.code !== "PGRST116") throw sessionError
+      if (!session) return null
+
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", session.userId)
+        .single()
+
+      if (userError && userError.code !== "PGRST116") throw userError
+      if (!user) return null
+
+      return { session, user }
+    },
+    updateSession: async (data) => {
+      const { data: updatedSession, error } = await supabase
+        .from("sessions")
+        .update({
+          expires: data.expires,
+          userId: data.userId,
+        })
+        .eq("sessionToken", data.sessionToken)
+        .select()
+        .single()
+      if (error) throw error
+      return updatedSession
+    },
+    deleteSession: async (sessionToken) => {
+      await supabase.from("sessions").delete().eq("sessionToken", sessionToken)
+      return undefined // Adapter expects undefined or the deleted session
+    },
+  },
   callbacks: {
-    async jwt({ token, account, profile }) {
+    async session({ session, user, token }) {
+      // Add user ID and vanityUrl to the session object
+      if (user) {
+        session.user.id = user.id
+        session.user.vanityUrl = (user as any).vanityUrl // Cast to any to access vanityUrl
+      }
+      return session
+    },
+    async jwt({ token, user, account, profile }) {
+      // Persist the OAuth access_token and vanityUrl to the JWT
       if (account) {
         token.accessToken = account.access_token
-        token.linkedinId = profile?.id
-        token.profileUrl = `https://www.linkedin.com/in/${profile?.id}`
+      }
+      if (profile) {
+        // Add vanityUrl from profile to token
+        ;(token as any).vanityUrl = (profile as any).vanityName || (profile as any).public_profile_url?.split("/").pop()
+      }
+      if (user) {
+        // Add vanityUrl from user to token if it exists (e.g., from database)
+        ;(token as any).vanityUrl = (user as any).vanityUrl || (token as any).vanityUrl
       }
       return token
     },
-    async session({ session, token }) {
-      return {
-        ...session,
-        accessToken: token.accessToken,
-        user: {
-          ...session.user,
-          linkedinId: token.linkedinId,
-          profileUrl: token.profileUrl,
-        },
-      }
-    },
   },
-  debug: true,
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/", // Redirect to homepage for sign-in
+    error: "/auth/error", // Custom error page
+  },
 }
+
+export const auth = handlers(authConfig)

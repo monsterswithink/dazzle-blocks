@@ -1,12 +1,17 @@
-import type React from "react"
-import { SessionProvider } from "next-auth/react"
-import { VeltProvider } from "@veltdev/react"
+"use client"
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  const veltApiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
+import { SessionProvider } from "next-auth/react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import type { ThemeProviderProps } from "next-themes"
+import { Toaster } from "@/components/ui/toaster" // Assuming you have a Toaster component
+
+export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
     <SessionProvider>
-      <VeltProvider apiKey={VELT_PUBLIC_KEY}>{children}</VeltProvider>
+      <NextThemesProvider {...props}>
+        {children}
+        <Toaster />
+      </NextThemesProvider>
     </SessionProvider>
   )
 }

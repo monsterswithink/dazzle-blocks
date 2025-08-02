@@ -1,63 +1,61 @@
-"use client"
-import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
-import { ResumeService } from "@/lib/resume-service"
-import { ProfileSnapshotCard } from "@/resume-blocks/ProfileSnapshotCard"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { ProfileSnapshotCard } from "@/components/resume-blocks/ProfileSnapshotCard"
 
-export default function ProfilePage() {
-  const { data: session } = useSession()
-  const [profile, setProfile] = useState<any>(null)
-  const [resumeId, setResumeId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
+export default async function ProfilePage() {
+  const session = await auth()
 
-  useEffect(() => {
-    async function fetchAndEnrich() {
-      setLoading(true)
-      if (!session?.accessToken) {
-        setLoading(false)
-        return
-      }
-
-      // 1. Fetch LinkedIn profile for vanityName/id
-      const res = await fetch("/api/profile", {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
-      })
-      const linkedInProfile = await res.json()
-      const vanityName = linkedInProfile.vanityName || linkedInProfile.id
-
-      // 2. Try to fetch resume from Supabase
-      let resume = await ResumeService.getResumeByPublicId(vanityName)
-      if (!resume) {
-        // 3. If not, enrich and save
-        setSyncing(true)
-        const enr = await fetch(`/api/enrich?vanityName=${vanityName}`)
-        const enrichedData = await enr.json()
-        await ResumeService.createResumeFromEnrichedData(enrichedData)
-        resume = await ResumeService.getResumeByPublicId(vanityName)
-        setSyncing(false)
-      }
-
-      setProfile(resume?.profile)
-      setResumeId(resume?.profile?.public_identifier)
-      setLoading(false)
-    }
-    fetchAndEnrich()
-  }, [session])
-
-  const handleViewResume = () => {
-    if (resumeId) window.location.assign(`/resume/${resumeId}`)
+  if (!session) {
+    redirect("/api/auth/signin")
   }
 
+  const user = session.user
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <ProfileSnapshotCard
-        profile={profile}
-        syncing={syncing}
-        onViewResume={handleViewResume}
-        resumeId={resumeId || undefined}
-        loading={loading}
-      />
-    </div>
+    <main className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader className="flex flex-col items-center gap-4">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={user?.image || "/placeholder-user.png"} alt={user?.name || "User Avatar"} />
+            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+          </Avatar>
+          <CardTitle className="text-2xl font-bold">{user?.name || "User Profile"}</CardTitle>
+          {user?.email && <p className="text-gray-600">{user.email}</p>}
+          {(user as any)?.vanityUrl && (
+            <p className="text-gray-500">
+              LinkedIn Vanity URL:{" "}
+              <a
+                href={`https://linkedin.com/in/${(user as any).vanityUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                linkedin.com/in/{(user as any).vanityUrl}
+              </a>
+            </p>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col gap-4">
+            <Button asChild size="lg">
+              <Link href="/editor">Start/Edit Resume</Link>
+            </Button>
+            {(user as any)?.vanityUrl && (
+              <Button asChild variant="outline" size="lg">
+                <Link href="/profile/enriched">View Enriched Profile Data</Link>
+              </Button>
+            )}
+            <Button asChild variant="destructive" size="lg">
+              <Link href="/api/auth/signout">Sign Out</Link>
+            </Button>
+          </div>
+          <ProfileSnapshotCard />
+        </CardContent>
+      </Card>
+    </main>
   )
 }

@@ -1,18 +1,18 @@
 {
   "name": "Modern",
   "colors": {
-    "primary": "#2563eb",
-    "secondary": "#e2e8f0",
-    "accent": "#3b82f6",
+    "primary": "#2c3e50",
+    "secondary": "#ecf0f1",
+    "text": "#34495e",
     "background": "#ffffff",
-    "text": "#1f2937"
+    "accent": "#3498db"
   },
   "fonts": {
-    "heading": "Inter, sans-serif",
-    "body": "Inter, sans-serif"
+    "heading": "sans-serif",
+    "body": "sans-serif"
   },
   "layout": {
-    "spacing": "1.5rem",
-    "borderRadius": "0.5rem"
+    "spacing": "normal",
+    "sections": ["personal", "summary", "experience", "education", "skills", "projects"]
   }
 }

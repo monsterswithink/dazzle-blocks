@@ -1,147 +1,148 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ResumeService } from "@/lib/resume-service"
-import { Button } from "@/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
-import { CheckCircle, ExternalLink, Loader2 } from "lucide-react"
+import { CardDescription } from "@/components/ui/card"
 
-export default function EnrichedProfilePage() {
-  const [data, setData] = useState<any>(null)
-  const [resumeId, setResumeId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+
+interface EnrichedProfileData {
+  full_name?: string
+  headline?: string
+  summary?: string
+  experience?: any[]
+  education?: any[]
+  skills?: string[]
+  profile_url?: string
+}
+
+async function fetchEnrichedProfile(vanityUrl: string): Promise<EnrichedProfileData | null> {
+  try {
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/enrich?vanityUrl=${encodeURIComponent(vanityUrl)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("Failed to fetch enriched profile:", errorData)
+      return null
+    }
+
+    const data: EnrichedProfileData = await response.json()
+    return data
+  } catch (error) {
+    console.error("Error fetching enriched profile:", error)
+    return null
+  }
+}
+
+export default async function EnrichedProfilePage() {
+  const session = await auth()
   const router = useRouter()
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem("enrichedProfile")
-    if (stored) {
-      setData(JSON.parse(stored))
-    }
-  }, [])
-
-  const handleCreateResume = async () => {
-    if (!data) return
-
-    setIsSaving(true)
-    try {
-      const createdResumeId = await ResumeService.createResumeFromEnrichedData(data)
-
-      if (createdResumeId) {
-        setResumeId(createdResumeId)
-        setSaved(true)
-        // Clear the session storage since we've saved it
-        sessionStorage.removeItem("enrichedProfile")
-      } else {
-        alert("Failed to create resume. Please try again.")
-      }
-    } catch (error) {
-      console.error("Error creating resume:", error)
-      alert("Failed to create resume. Please try again.")
-    } finally {
-      setIsSaving(false)
-    }
+  if (!session || !session.user || !(session.user as any).vanityUrl) {
+    redirect("/api/auth/signin")
   }
 
-  const handleViewResume = () => {
-    if (resumeId) {
-      router.push(`/resume/${resumeId}`)
-    }
-  }
-
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p>Loading enriched data...</p>
-      </div>
-    )
-  }
+  const vanityUrl = (session.user as any).vanityUrl
+  const enrichedData = await fetchEnrichedProfile(vanityUrl)
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <Card className="mb-8">
+    <main className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
+      {enrichedData ? (
+        <Card className="w-full max-w-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {saved ? <CheckCircle className="h-5 w-5 text-green-600" /> : null}
-              Enriched LinkedIn Profile
-            </CardTitle>
-            <CardDescription>
-              {saved
-                ? "Your resume has been created successfully!"
-                : "Review your LinkedIn data and create your resume"}
-            </CardDescription>
+            <CardTitle className="text-2xl font-bold">Enriched LinkedIn Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!saved ? (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">Profile Summary</h3>
-                  <p>
-                    <strong>Name:</strong> {data.full_name}
-                  </p>
-                  <p>
-                    <strong>Headline:</strong> {data.headline}
-                  </p>
-                  <p>
-                    <strong>Location:</strong> {data.city}, {data.state}
-                  </p>
-                  <p>
-                    <strong>Experience:</strong> {data.experiences?.length || 0} positions
-                  </p>
-                  <p>
-                    <strong>Skills:</strong> {data.skills?.length || 0} skills
-                  </p>
+            <div className="space-y-4">
+              <p>
+                <span className="font-semibold">Name:</span> {enrichedData.full_name || session.user.name}
+              </p>
+              {enrichedData.headline && (
+                <p>
+                  <span className="font-semibold">Headline:</span> {enrichedData.headline}
+                </p>
+              )}
+              {enrichedData.summary && (
+                <div>
+                  <h3 className="font-semibold">Summary:</h3>
+                  <p>{enrichedData.summary}</p>
                 </div>
-
-                <Button onClick={handleCreateResume} disabled={isSaving} className="w-full" size="lg">
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Resume...
-                    </>
-                  ) : (
-                    "Create My Resume"
-                  )}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-900 mb-2">Resume Created!</h3>
-                  <p>
-                    Your resume is now available at: <code>/resume/{resumeId}</code>
-                  </p>
+              )}
+              {enrichedData.experience && enrichedData.experience.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">Experience:</h3>
+                  <ul className="list-disc pl-5">
+                    {enrichedData.experience.map((exp: any, index: number) => (
+                      <li key={index}>
+                        {exp.title} at {exp.company} ({exp.start_date} - {exp.end_date || "Present"})
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                <div className="flex gap-4">
-                  <Button onClick={handleViewResume} className="flex-1">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    View My Resume
-                  </Button>
-                  <Button variant="outline" onClick={() => router.push("/profile")}>
-                    Back to Profile
-                  </Button>
+              )}
+              {enrichedData.education && enrichedData.education.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">Education:</h3>
+                  <ul className="list-disc pl-5">
+                    {enrichedData.education.map((edu: any, index: number) => (
+                      <li key={index}>
+                        {edu.degree} from {edu.university} ({edu.start_date} - {edu.end_date || "Present"})
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
-            )}
+              )}
+              {enrichedData.skills && enrichedData.skills.length > 0 && (
+                <div>
+                  <h3 className="font-semibold">Skills:</h3>
+                  <p>{enrichedData.skills.join(", ")}</p>
+                </div>
+              )}
+              {enrichedData.profile_url && (
+                <p>
+                  <span className="font-semibold">Profile URL:</span>{" "}
+                  <a
+                    href={enrichedData.profile_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    {enrichedData.profile_url}
+                  </a>
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Button asChild>
+                <Link href="/profile">Back to Profile</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Raw data preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Raw LinkedIn Data</CardTitle>
-            <CardDescription>Complete enriched profile data from EnrichLayer</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-gray-100 p-4 rounded-lg text-xs overflow-auto max-h-96">
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      ) : (
+        <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+          <Card className="w-full max-w-md">
+            <CardHeader className="space-y-1 text-center">
+              <CardTitle className="text-3xl font-bold">No Data</CardTitle>
+              <CardDescription>No enriched profile data found.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <Button className="w-full" onClick={() => router.push("/profile")}>
+                Go Back to Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </main>
   )
 }

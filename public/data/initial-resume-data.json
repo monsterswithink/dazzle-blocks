@@ -1,122 +1,83 @@
 {
-  "profile": {
-    "public_identifier": "john-doe",
-    "profile_pic_url": "/placeholder.svg?height=128&width=128",
-    "background_cover_image_url": null,
-    "first_name": "John",
-    "last_name": "Doe",
-    "full_name": "John Doe",
-    "follower_count": 500,
-    "occupation": "Software Engineer",
-    "headline": "Senior Full Stack Developer | React & Node.js Expert",
-    "summary": "Passionate software engineer with 5+ years of experience building scalable web applications. Specialized in React, Node.js, and cloud technologies. Love solving complex problems and mentoring junior developers.",
-    "country": "US",
-    "country_full_name": "United States",
-    "city": "San Francisco",
-    "state": "CA",
-    "experiences": [
-      {
-        "starts_at": { "day": 1, "month": 1, "year": 2022 },
-        "ends_at": null,
-        "company": "Tech Corp",
-        "company_linkedin_profile_url": "",
-        "company_facebook_profile_url": "",
-        "title": "Senior Software Engineer",
-        "description": "Lead development of customer-facing web applications using React and Node.js. Mentored 3 junior developers and improved team productivity by 40%.",
-        "location": "San Francisco, CA",
-        "logo_url": ""
-      },
-      {
-        "starts_at": { "day": 1, "month": 6, "year": 2020 },
-        "ends_at": { "day": 31, "month": 12, "year": 2021 },
-        "company": "StartupXYZ",
-        "company_linkedin_profile_url": "",
-        "company_facebook_profile_url": "",
-        "title": "Full Stack Developer",
-        "description": "Built and maintained multiple web applications from scratch. Implemented CI/CD pipelines and reduced deployment time by 60%.",
-        "location": "Remote",
-        "logo_url": ""
-      }
-    ],
-    "education": [
-      {
-        "school": "University of California, Berkeley",
-        "degree": "Bachelor of Science",
-        "field_of_study": "Computer Science",
-        "starts_at": { "day": 1, "month": 9, "year": 2016 },
-        "ends_at": { "day": 31, "month": 5, "year": 2020 },
-        "grade": "3.8 GPA",
-        "description": "",
-        "logo_url": "",
-        "location": "Berkeley, CA"
-      }
-    ],
-    "languages": [
-      { "name": "English", "proficiency": "Native" },
-      { "name": "Spanish", "proficiency": "Conversational" }
-    ],
-    "languages_and_proficiencies": [],
-    "accomplishment_organisations": [],
-    "accomplishment_publications": [],
-    "accomplishment_honors_awards": [],
-    "accomplishment_patents": [],
-    "accomplishment_courses": [],
-    "accomplishment_projects": [],
-    "accomplishment_test_scores": [],
-    "volunteer_work": [],
-    "certifications": [
-      {
-        "name": "AWS Solutions Architect",
-        "authority": "Amazon Web Services",
-        "license_number": "AWS-123456",
-        "url": "",
-        "starts_at": { "day": 1, "month": 3, "year": 2023 },
-        "ends_at": { "day": 1, "month": 3, "year": 2026 }
-      }
-    ],
-    "connections": 500,
-    "people_also_viewed": [],
-    "recommendations": [],
-    "activities": [],
-    "similarly_named_profiles": [],
-    "articles": [],
-    "groups": [],
-    "skills": ["JavaScript", "React", "Node.js", "TypeScript", "Python", "AWS", "Docker", "GraphQL"],
-    "inferred_salary": { "min": 120000, "max": 180000 },
-    "gender": null,
-    "birth_date": null,
-    "industry": "Technology",
-    "extra": {
-      "github_profile_id": "johndoe",
-      "facebook_profile_id": "",
-      "twitter_profile_id": "johndoe",
-      "website": "https://johndoe.dev"
-    },
-    "interests": ["Technology", "Open Source", "Machine Learning"],
-    "personal_emails": ["john.doe@email.com"],
-    "personal_numbers": [],
-    "meta": { "last_updated": "2024-01-15" }
+  "personal": {
+    "name": "John Doe",
+    "title": "Software Engineer",
+    "email": "john.doe@example.com",
+    "phone": "(123) 456-7890",
+    "linkedin": "https://linkedin.com/in/johndoe"
   },
-  "theme": {
-    "name": "Modern",
-    "colors": {
-      "primary": "#2563eb",
-      "secondary": "#e2e8f0",
-      "accent": "#3b82f6",
-      "background": "#ffffff",
-      "text": "#1f2937"
+  "summary": "<p>Highly motivated and results-oriented Software Engineer with 5 years of experience in developing and deploying scalable web applications. Proficient in JavaScript, React, Node.js, and various database technologies. Seeking to leverage expertise in a challenging role to contribute to innovative projects.</p>",
+  "experience": [
+    {
+      "title": "Senior Software Engineer",
+      "company": "Tech Solutions Inc.",
+      "location": "San Francisco, CA",
+      "startDate": "Jan 2022",
+      "endDate": "Present",
+      "description": "<ul><li>Led the development of a new customer-facing dashboard using React and Node.js, resulting in a 20% increase in user engagement.</li><li>Implemented a microservices architecture, improving system scalability and reducing latency by 15%.</li><li>Mentored junior developers and conducted code reviews to ensure high code quality and adherence to best practices.</li></ul>"
     },
-    "fonts": {
-      "heading": "Inter, sans-serif",
-      "body": "Inter, sans-serif"
-    },
-    "layout": {
-      "spacing": "1.5rem",
-      "borderRadius": "0.5rem"
+    {
+      "title": "Software Engineer",
+      "company": "Innovate Corp.",
+      "location": "Seattle, WA",
+      "startDate": "Jul 2019",
+      "endDate": "Dec 2021",
+      "description": "<ul><li>Developed and maintained RESTful APIs using Node.js and Express, serving over 10,000 daily active users.</li><li>Collaborated with product managers and designers to translate requirements into technical specifications.</li><li>Optimized database queries and application performance, reducing load times by 30%.</li></ul>"
     }
-  },
-  "settings": {
-    "isEditMode": false,
-    "lastModified": "2024-01-15T00:00:00Z"
-  }
+  ],
+  "education": [
+    {
+      "degree": "Master of Science in Computer Science",
+      "university": "University of Technology",
+      "location": "New York, NY",
+      "startDate": "Sep 2018",
+      "endDate": "May 2019",
+      "description": "<p>Specialized in Distributed Systems and Artificial Intelligence.</p>"
+    },
+    {
+      "degree": "Bachelor of Science in Computer Science",
+      "university": "State University",
+      "location": "Boston, MA",
+      "startDate": "Sep 2015",
+      "endDate": "May 2019",
+      "description": "<p>Graduated with honors. Relevant coursework: Data Structures, Algorithms, Database Systems.</p>"
+    }
+  ],
+  "skills": [
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "Express.js",
+    "SQL",
+    "PostgreSQL",
+    "MongoDB",
+    "Git",
+    "AWS",
+    "Docker",
+    "Agile Methodologies",
+    "RESTful APIs"
+  ],
+  "projects": [
+    {
+      "title": "E-commerce Platform Redesign",
+      "startDate": "Mar 2023",
+      "endDate": "Jun 2023",
+      "description": "<p>Led the front-end redesign of an existing e-commerce platform, improving user experience and conversion rates by 10%.</p>"
+    },
+    {
+      "title": "Real-time Chat Application",
+      "startDate": "Jan 2023",
+      "endDate": "Feb 2023",
+      "description": "<p>Developed a real-time chat application using WebSockets and React, supporting group chats and direct messaging.</p>"
+    }
+  ],
+  "awards": [
+    {
+      "title": "Employee of the Year",
+      "issuer": "Tech Solutions Inc.",
+      "date": "Dec 2022",
+      "description": "<p>Recognized for outstanding contributions to the customer dashboard project and mentorship of junior team members.</p>"
+    }
+  ]
 }

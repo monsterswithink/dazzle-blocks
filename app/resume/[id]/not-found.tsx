@@ -1,30 +1,32 @@
 import Link from "next/link"
-import { Button } from "@/ui/button"
-import { FileX, Home } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Frown } from "lucide-react"
 
-export default function ResumeNotFound() {
+export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center max-w-md mx-auto px-4">
-        <div className="mb-8">
-          <FileX className="h-24 w-24 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Resume Not Found</h1>
-          <p className="text-gray-600">The resume you're looking for doesn't exist or may have been moved.</p>
-        </div>
-
-        <div className="space-y-4">
-          <Button asChild className="w-full">
-            <Link href="/">
-              <Home className="h-4 w-4 mr-2" />
-              Go Home
-            </Link>
-          </Button>
-
-          <p className="text-sm text-gray-500">
-            If you believe this is an error, please check the URL or contact support.
+    <div className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-center gap-2 text-red-600">
+            <Frown className="h-6 w-6" />
+            Resume Not Found
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-gray-700">
+            We couldn't find the resume you're looking for. It might have been deleted, or the link is incorrect.
           </p>
-        </div>
-      </div>
+          <div className="flex flex-col gap-2">
+            <Button asChild>
+              <Link href="/editor">Create a New Resume</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/profile">Go to My Resumes</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

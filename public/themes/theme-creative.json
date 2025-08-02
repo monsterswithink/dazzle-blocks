@@ -1,18 +1,18 @@
 {
   "name": "Creative",
   "colors": {
-    "primary": "#7c3aed",
-    "secondary": "#f3e8ff",
-    "accent": "#a855f7",
-    "background": "#ffffff",
-    "text": "#1f2937"
+    "primary": "#FF6B6B",
+    "secondary": "#FFE66D",
+    "text": "#333333",
+    "background": "#F7FFF7",
+    "accent": "#4ECDC4"
   },
   "fonts": {
-    "heading": "Poppins, sans-serif",
-    "body": "Open Sans, sans-serif"
+    "heading": "sans-serif",
+    "body": "sans-serif"
   },
   "layout": {
-    "spacing": "2rem",
-    "borderRadius": "1rem"
+    "spacing": "wide",
+    "sections": ["personal", "summary", "experience", "skills", "education", "projects", "awards"]
   }
 }

@@ -1,18 +1,18 @@
 {
   "name": "Classic",
   "colors": {
-    "primary": "#1f2937",
-    "secondary": "#f3f4f6",
-    "accent": "#6b7280",
+    "primary": "#333333",
+    "secondary": "#f0f0f0",
+    "text": "#000000",
     "background": "#ffffff",
-    "text": "#374151"
+    "accent": "#007bff"
   },
   "fonts": {
-    "heading": "Georgia, serif",
-    "body": "Georgia, serif"
+    "heading": "serif",
+    "body": "serif"
   },
   "layout": {
-    "spacing": "1.25rem",
-    "borderRadius": "0.25rem"
+    "spacing": "normal",
+    "sections": ["personal", "summary", "experience", "education", "skills", "projects", "awards"]
   }
 }

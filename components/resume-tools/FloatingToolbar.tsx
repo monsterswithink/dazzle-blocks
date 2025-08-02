@@ -1,167 +1,147 @@
 "use client"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Bold, Italic, Underline, Link, List, ListOrdered, Heading1, Heading2, Heading3, Code } from "lucide-react"
+import { useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import TiptapLink from "@tiptap/extension-link" // Renamed to avoid conflict with Lucide Link
 
-import { useState, useEffect } from "react"
-import { Button } from "@/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu"
-import { Palette, Share, Edit3, Linkedin, Check, Zap, Loader2 } from "lucide-react"
-import type { ResumeTheme } from "@/types/profile"
-import { SharePopover } from "@/resume-tools/SharePopover"
-import { toast } from "@/hooks/use-toast"
+type FloatingToolbarProps = {}
 
-// Fake pricing modal (replace with real modal in future)
-function showPricingModal(feature: string) {
-  toast({ title: "Upgrade Required", description: `Unlock ${feature} with Super Dazzle upgrade!` })
-}
+export function FloatingToolbar() {
+  // This component needs to interact with the currently active Tiptap editor.
+  // Velt's `initEditor` function makes the editor instance globally accessible
+  // via `Velt.getActiveEditor()`.
+  // This is a simplified example. In a real application, you might pass the editor
+  // instance down via context or use a more robust state management for toolbars.
 
-interface FloatingToolbarProps {
-  isEditMode: boolean
-  onToggleEdit: () => void
-  onThemeChange: (theme: ResumeTheme) => void
-  onLinkedInSync: () => void
-  currentTheme: ResumeTheme
-  isSuperDazzleActive?: boolean
-  onSuperDazzleToggle?: () => void
-  syncCount?: number // Number of syncs left today
-}
+  // For demonstration, we'll create a dummy editor to show the toolbar functionality.
+  // In a real scenario, this toolbar would connect to the `editor` instance
+  // from `EditableText` component via Velt's active editor mechanism.
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+      }),
+      TiptapLink.configure({
+        openOnClick: false, // Prevent opening link when clicking in editor
+        autolink: true,
+      }),
+    ],
+    content: "<p>This is a dummy editor for toolbar demo.</p>",
+    editable: false, // Make it non-editable for this demo
+  })
 
-export function FloatingToolbar({
-  isEditMode,
-  onToggleEdit,
-  onThemeChange,
-  onLinkedInSync,
-  currentTheme,
-  isSuperDazzleActive = false,
-  onSuperDazzleToggle,
-  syncCount = 3,
-}: FloatingToolbarProps) {
-  const [themes, setThemes] = useState<ResumeTheme[]>([])
-  const [loadingDazzle, setLoadingDazzle] = useState(false)
-  const [isDazzleActive, setIsDazzleActive] = useState(isSuperDazzleActive)
-  const [syncsLeft, setSyncsLeft] = useState(syncCount)
-
-  useEffect(() => {
-    // Load available themes from /public/themes/theme-*.json
-    const loadThemes = async () => {
-      const themeNames = ["modern", "classic", "minimal", "creative", "product", "developer", "industrial", "data", "manager", "creative"]
-      const loaded: ResumeTheme[] = []
-      await Promise.all(
-        themeNames.map(async (name) => {
-          try {
-            const res = await fetch(`/themes/theme-${name}.json`)
-            if (res.ok) {
-              loaded.push(await res.json())
-            }
-          } catch {}
-        })
-      )
-      setThemes(loaded)
-    }
-    loadThemes()
-  }, [])
-
-  const handleDazzle = () => {
-    // If not active, show pricing modal
-    if (!isDazzleActive) {
-      showPricingModal("Super Dazzle")
-      return
-    }
-    // If active, show loader briefly and simulate ML action
-    setLoadingDazzle(true)
-    setTimeout(() => {
-      setLoadingDazzle(false)
-      toast({ title: "Super Dazzle!", description: "Candidate-to-role ML matching complete." })
-    }, 2000)
+  if (!editor) {
+    return null
   }
 
-  const handleEditMode = () => {
-    // If Edit Mode is premium, gate with modal
-    if (!isDazzleActive) {
-      showPricingModal("Edit Mode")
-      return
-    }
-    onToggleEdit()
-  }
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href
+    const url = window.prompt("URL", previousUrl)
 
-  const handleSync = () => {
-    if (syncsLeft <= 0) {
-      showPricingModal("More LinkedIn Syncs")
+    // cancelled
+    if (url === null) {
       return
     }
-    setSyncsLeft(syncsLeft - 1)
-    onLinkedInSync()
+
+    // empty
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run()
+      return
+    }
+
+    // update link
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run()
   }
 
   return (
-    <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
-      <div className="bg-white/90 backdrop-blur-lg border border-gray-200 rounded-full shadow-xl flex items-center gap-2 px-4 py-2 floating-toolbar">
-        {/* Super Dazzle */}
-        <Button
-          variant={isDazzleActive ? "default" : "ghost"}
-          size="sm"
-          className="rounded-full"
-          onClick={handleDazzle}
-          aria-label="Super Dazzle"
-        >
-          {loadingDazzle ? (
-            <Loader2 className="h-4 w-4 animate-spin text-yellow-500" />
-          ) : (
-            <Zap className={`h-4 w-4 ${isDazzleActive ? "text-yellow-500" : ""}`} />
-          )}
-        </Button>
-
-        {/* Theme Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="rounded-full" aria-label="Theme">
-              <Palette className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="mb-2">
-            {themes.map((theme) => (
-              <DropdownMenuItem
-                key={theme.name}
-                onClick={() => onThemeChange(theme)}
-                className="flex items-center gap-2"
-              >
-                <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: theme.colors.primary }} />
-                {theme.name}
-                {currentTheme.name === theme.name && <Check className="h-3 w-3 ml-auto" />}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Edit Mode */}
-        <Button
-          variant={isEditMode ? "default" : "ghost"}
-          size="sm"
-          className="rounded-full"
-          onClick={handleEditMode}
-          aria-label="Edit Mode"
-        >
-          <Edit3 className="h-4 w-4" />
-        </Button>
-
-        {/* Sync LinkedIn */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-full"
-          onClick={handleSync}
-          aria-label="Sync LinkedIn"
-          disabled={syncsLeft <= 0}
-        >
-          <Linkedin className="h-4 w-4 text-blue-600" />
-          <span className="ml-1 text-xs text-blue-700 font-semibold">{syncsLeft}/3</span>
-        </Button>
-
-        {/* Share popover */}
-        <SharePopover>
-          <Button variant="ghost" size="sm" className="rounded-full" aria-label="Share">
-            <Share className="h-4 w-4" />
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded-md border bg-white p-2 shadow-lg z-50">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm">
+            <Heading1 className="h-4 w-4" />
           </Button>
-        </SharePopover>
-      </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+            <Heading1 className="mr-2 h-4 w-4" />
+            Heading 1
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+            <Heading2 className="mr-2 h-4 w-4" />
+            Heading 2
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+            <Heading3 className="mr-2 h-4 w-4" />
+            Heading 3
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()}>
+            <span className="mr-2 h-4 w-4">¶</span>
+            Paragraph
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        disabled={!editor.can().chain().focus().toggleBold().run()}
+        className={editor.isActive("bold") ? "is-active" : ""}
+      >
+        <Bold className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        disabled={!editor.can().chain().focus().toggleItalic().run()}
+        className={editor.isActive("italic") ? "is-active" : ""}
+      >
+        <Italic className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        disabled={!editor.can().chain().focus().toggleUnderline().run()}
+        className={editor.isActive("underline") ? "is-active" : ""}
+      >
+        <Underline className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="sm" onClick={setLink} className={editor.isActive("link") ? "is-active" : ""}>
+        <Link className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        disabled={!editor.can().chain().focus().toggleBulletList().run()}
+        className={editor.isActive("bulletList") ? "is-active" : ""}
+      >
+        <List className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        disabled={!editor.can().chain().focus().toggleOrderedList().run()}
+        className={editor.isActive("orderedList") ? "is-active" : ""}
+      >
+        <ListOrdered className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        disabled={!editor.can().chain().focus().toggleCodeBlock().run()}
+        className={editor.isActive("codeBlock") ? "is-active" : ""}
+      >
+        <Code className="h-4 w-4" />
+      </Button>
     </div>
   )
 }

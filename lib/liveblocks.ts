@@ -2,45 +2,60 @@ import { createClient } from "@liveblocks/client"
 import { createRoomContext } from "@liveblocks/react"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
 
-type Presence = {}
+// Presence represents the properties that will exist on every User in the Room
+// and be shared with everyone else.
+export type Presence = {
+  // cursor: { x: number, y: number } | null,
+  // ...
+}
 
-type Storage = {
+// Optionally, Storage represents the shared document that persists in the Room,
+// even after all users leave.
+export type Storage = {
+  // author: LiveObject<{ firstName: string, lastName: string }>,
+  // ...
   profile: EnrichedProfile
   theme: ResumeTheme
   settings: {
     isEditMode: boolean
     lastModified: string
   }
+  resumeData: any // Using 'any' for simplicity, define a proper type for your resume data
 }
 
-type UserMeta = {
-  id: string
-  info: {
-    name: string
-    avatar: string
+// Optionally, UserMeta represents static/readonly metadata on each user, like their name.
+export type UserMeta = {
+  id?: string // Accessible in Liveblocks presence hooks and authentication
+  info?: {
+    name?: string
+    avatar?: string
   }
 }
 
-type RoomEvent = {}
+// Optionally, Event represents events that can be emitted by the client and received by others in the Room.
+export type RoomEvent = {
+  // type: "NOTIFICATION",
+  // message: string,
+}
 
-/* --------  FIX: tolerate missing key & use pattern-safe fallback  -------- */
-const apiKey = process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY
+// Optionally, Liveness represents the state of a user's connection and activity.
+export type Liveness = {
+  // isTyping: boolean,
+  // ...
+}
+
 const client = createClient({
-  publicApiKey:
-    apiKey && apiKey.startsWith("pk_")
-      ? apiKey
-      : // dummy dev key that matches the expected pattern
-        "pk_live_000000000000000000000000000000000000",
+  publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
 })
-/* ------------------------------------------------------------------------ */
 
 export const {
   RoomProvider,
-  useRoom,
   useMyPresence,
   useOthers,
-  useBroadcastEvent,
-  useEventListener,
   useStorage,
   useMutation,
-} = createRoomContext<Presence, Storage, UserMeta, RoomEvent>(client)
+  useBroadcastEvent,
+  useEventListener,
+  useSelf,
+  useRoom,
+} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, Liveness>(client)

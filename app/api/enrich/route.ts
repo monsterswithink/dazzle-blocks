@@ -1,35 +1,47 @@
-// app/api/enrich/route.ts (Next.js App Router)
+import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 
-import { type NextRequest, NextResponse } from "next/server"
+export async function GET(request: Request) {
+  const session = await auth()
 
-export async function GET(req: NextRequest) {
-  const apiKey = process.env.ENRICHLAYER_API_KEY
-  const { searchParams } = new URL(req.url)
-  const vanityName = searchParams.get("vanityName")
-
-  if (!vanityName || !apiKey) {
-    return NextResponse.json({ error: "Missing parameters" }, { status: 400 })
+  if (!session || !session.user || !(session.user as any).vanityUrl) {
+    return NextResponse.json({ error: "Unauthorized or missing vanityUrl" }, { status: 401 })
   }
 
-  const url = new URL("https://enrichlayer.com/api/v2/profile")
-  url.searchParams.set("linkedin_profile_url", `https://linkedin.com/in/${vanityName}/`)
-  url.searchParams.set("extra", "include")
-  url.searchParams.set("github_profile_id", "include")
-  url.searchParams.set("facebook_profile_id", "include")
-  url.searchParams.set("twitter_profile_id", "include")
-  url.searchParams.set("personal_contact_number", "include")
-  url.searchParams.set("personal_email", "include")
-  url.searchParams.set("inferred_salary", "include")
-  url.searchParams.set("skills", "include")
-  url.searchParams.set("use_cache", "if-present")
-  url.searchParams.set("fallback_to_cache", "on-error")
+  const { searchParams } = new URL(request.url)
+  const vanityUrl = searchParams.get("vanityUrl") || (session.user as any).vanityUrl
 
-  const enrichRes = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-  })
+  if (!vanityUrl) {
+    return NextResponse.json({ error: "vanityUrl is required" }, { status: 400 })
+  }
 
-  const data = await enrichRes.json()
-  return NextResponse.json(data)
+  const enrichLayerApiKey = process.env.ENRICHLAYER_API_KEY
+
+  if (!enrichLayerApiKey) {
+    console.error("ENRICHLAYER_API_KEY is not set.")
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+  }
+
+  try {
+    // This is a placeholder for the actual EnrichLayer API call.
+    // Replace with your actual EnrichLayer integration logic.
+    const enrichResponse = await fetch(
+      `https://api.enrichlayer.com/v1/profile?api_key=${enrichLayerApiKey}&url=${encodeURIComponent(vanityUrl)}`,
+    )
+
+    if (!enrichResponse.ok) {
+      const errorData = await enrichResponse.json()
+      console.error("EnrichLayer API error:", errorData)
+      return NextResponse.json(
+        { error: "Failed to fetch enriched data", details: errorData },
+        { status: enrichResponse.status },
+      )
+    }
+
+    const data = await enrichResponse.json()
+    return NextResponse.json(data)
+  } catch (error) {
+    console.error("Error fetching enriched data:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }

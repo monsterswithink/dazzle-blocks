@@ -1,68 +1,75 @@
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
+import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
+import { VeltProvider } from "@/components/resume-providers/Velt"
+import { VeltClient } from "velt"
 import { notFound } from "next/navigation"
-import { ResumeService } from "@/lib/resume-service"
-import ResumeViewer from "./ResumeViewer"
 
-export default async function ResumePage({ params }: { params: { id: string } }) {
-  const resumeData = await ResumeService.getResumeByPublicId(params.id)
-  if (!resumeData) notFound()
-
-  // Pass resumeId as prop to ResumeViewer for dynamic document id
-  return <ResumeViewer initialData={resumeData} resumeId={params.id} />
+interface ResumePageProps {
+  params: {
+    id: string
+  }
 }
 
-// import { notFound } from "next/navigation"
-// import { ResumeService } from "@/lib/resume-service"
-// import ResumeViewer from "./ResumeViewer"
+export default async function ResumePage({ params }: ResumePageProps) {
+  const session = await auth()
 
-// interface ResumePageProps {
-//   params: { id: string }
-// }
+  if (!session) {
+    redirect("/api/auth/signin")
+  }
 
-// async function getResumeData(id: string) {
-//   try {
-//     return await ResumeService.getResumeByPublicId(id)
-//   } catch (error) {
-//     console.error("Error fetching resume data:", error)
-//     return null
-//   }
-// }
+  const userId = session.user?.id
+  if (!userId) {
+    redirect("/api/auth/signin")
+  }
 
-// export async function generateMetadata({ params }: ResumePageProps) {
-//   const resumeData = await getResumeData(params.id)
+  const resumeId = params.id
 
-//   if (!resumeData) {
-//     return {
-//       title: "Resume Not Found",
-//       description: "The requested resume could not be found.",
-//     }
-//   }
+  let resumeContent: any = null
 
-//   const { profile } = resumeData
+  try {
+    const { data: resume, error: fetchError } = await supabase
+      .from("resumes")
+      .select("content")
+      .eq("id", resumeId)
+      .eq("user_id", userId) // Ensure user owns the resume
+      .single()
 
-//   return {
-//     title: `${profile.full_name} - Resume`,
-//     description: profile.headline || profile.summary?.slice(0, 160),
-//     openGraph: {
-//       title: `${profile.full_name} - Resume`,
-//       description: profile.headline,
-//       images: profile.profile_pic_url ? [profile.profile_pic_url] : [],
-//       type: "profile",
-//     },
-//     twitter: {
-//       card: "summary_large_image",
-//       title: `${profile.full_name} - Resume`,
-//       description: profile.headline,
-//       images: profile.profile_pic_url ? [profile.profile_pic_url] : [],
-//     },
-//   }
-// }
+    if (fetchError) {
+      console.error("Error fetching resume:", fetchError)
+      if (fetchError.code === "PGRST116") {
+        // No rows found
+        notFound() // Trigger Next.js not-found page
+      }
+      // For other errors, we might still want to show an error message
+      // or redirect, but for now, let's assume notFound covers it.
+      notFound()
+    }
 
-// export default async function ResumePage({ params }: ResumePageProps) {
-//   const resumeData = await getResumeData(params.id)
+    if (!resume) {
+      notFound() // Resume not found or not owned by user
+    }
 
-//   if (!resumeData) {
-//     notFound()
-//   }
+    resumeContent = resume.content
+  } catch (e) {
+    console.error("Unexpected error in resume fetching:", e)
+    notFound() // Catch any unexpected errors and show not found
+  }
 
-//   return <ResumeViewer initialData={resumeData} resumeId={params.id} />
-// }
+  // Initialize Velt client for server-side rendering (optional, but good practice)
+  const veltClient = new VeltClient({
+    apiKey: process.env.VELT_PUBLIC_KEY!,
+    userId: userId,
+    userName: session.user?.name || "Anonymous",
+    userAvatar: session.user?.image || "/placeholder-user.png",
+  })
+
+  return (
+    <VeltProvider client={veltClient} documentId={resumeId}>
+      <main className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
+        <ResumeEditor initialResumeData={resumeContent} resumeId={resumeId} />
+      </main>
+    </VeltProvider>
+  )
+}

@@ -1,26 +1,20 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "#styles"
-import { Providers } from "@/app/providers"
-
-const inter = Inter({ subsets: ["latin"] })
+import ClientLayout from "./ClientLayout"
 
 export const metadata: Metadata = {
-  title: "LinkedIn Resume Sync",
-  description: "Sync your LinkedIn profile to create beautiful, collaborative resumes",
+  title: "Liveblocks Resume Editor",
+  description: "A collaborative resume editor built with Next.js and Liveblocks.",
     generator: 'v0.dev'
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <SessionProvider>
-      <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_API_KEY!}>
-        {children}
-        <VeltAuthBridge />
-        {/** whenever you switch document: */}
-        <VeltDocSetter documentId={'some-document-id'} />
-      </VeltProvider>
-    </SessionProvider>
-  )
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return <ClientLayout>{children}</ClientLayout>
 }
+
+
+import './globals.css'

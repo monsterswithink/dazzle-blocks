@@ -1,112 +1,126 @@
 "use client"
 
-import { Button } from "@/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
-import { Progress } from "@/ui/progress"
-import { SharePopover } from "@/resume-tools/SharePopover"
-import { useOthers, RoomProvider } from "@/lib/liveblocks"
-import Image from "next/image"
-import { Users, Loader2, ExternalLink } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { BarChart, LineChart, PieChart } from "lucide-react"
+import { ResponsiveContainer, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Pie, Cell } from "recharts"
+import { useRoom } from "@velt/react"
+import { useEffect, useState } from "react"
 
-export function ProfileSnapshotCard({
-  profile,
-  syncing = false,
-  onViewResume,
-  resumeId,
-  loading = false,
-}: {
-  profile: any
-  syncing?: boolean
-  onViewResume?: () => void
-  resumeId?: string
-  loading?: boolean
-}) {
-  const router = useRouter()
+// Dummy data for demonstration
+const dummyAnalyticsData = {
+  views: [
+    { name: "Jan", value: 400 },
+    { name: "Feb", value: 300 },
+    { name: "Mar", value: 600 },
+    { name: "Apr", value: 800 },
+    { name: "May", value: 500 },
+  ],
+  clicks: [
+    { name: "Jan", value: 100 },
+    { name: "Feb", value: 150 },
+    { name: "Mar", value: 200 },
+    { name: "Apr", value: 180 },
+    { name: "May", value: 250 },
+  ],
+  sources: [
+    { name: "LinkedIn", value: 400, color: "#0077B5" },
+    { name: "GitHub", value: 300, color: "#6e5494" },
+    { name: "Direct", value: 200, color: "#4CAF50" },
+    { name: "Other", value: 100, color: "#FFC107" },
+  ],
+}
 
-  // Liveblocks viewer count component
-  function ViewerCount() {
-    const others = useOthers()
-    return (
-      <div className="flex items-center gap-1 text-xs text-gray-500">
-        <Users className="h-4 w-4" />
-        {(others.length + 1)} viewing
-      </div>
-    )
-  }
+export function ProfileSnapshotCard() {
+  const { room } = useRoom()
+  const [analyticsData, setAnalyticsData] = useState(dummyAnalyticsData)
 
-  // Card skeleton
-  if (loading || !profile) {
-    return (
-      <Card className="animate-pulse max-w-md mx-auto p-6 relative">
-        <div className="flex gap-4 items-center mb-4">
-          <div className="rounded-full bg-gray-200 h-16 w-16" />
-          <div>
-            <div className="h-4 bg-gray-200 mb-2 w-32 rounded" />
-            <div className="h-3 bg-gray-100 w-24 rounded" />
-          </div>
-        </div>
-        <div className="h-3 bg-gray-100 w-3/4 mb-4 rounded" />
-        <div className="flex gap-2">
-          <div className="h-8 w-24 bg-gray-200 rounded" />
-          <div className="h-8 w-24 bg-gray-100 rounded" />
-        </div>
-        <div className="absolute left-0 right-0 bottom-0 px-6 pb-4">
-          <Progress value={80} className="h-2" />
-          <p className="text-center text-sm text-gray-600 mt-1">Syncing profile…</p>
-        </div>
-      </Card>
-    )
-  }
+  useEffect(() => {
+    if (room) {
+      // Example of fetching analytics data using Velt's view analytics
+      // This is a simplified example. In a real app, you'd integrate with your backend
+      // that processes Velt analytics events.
+      const fetchVeltAnalytics = async () => {
+        // Velt's view analytics typically involves setting up webhooks
+        // to capture view events and then processing them on your backend.
+        // For this demo, we'll just simulate fetching data.
+        console.log("Fetching Velt view analytics (simulated)...")
+        // Velt.getAnalytics().then(data => {
+        //   // Process Velt analytics data here
+        //   // For now, we'll just use dummy data
+        // });
+      }
+
+      fetchVeltAnalytics()
+    }
+  }, [room])
 
   return (
-    <Card className="max-w-md mx-auto relative">
-      <CardHeader className="flex flex-col items-center">
-        <Image
-          src={profile.profile_pic_url || "/placeholder.svg"}
-          alt={profile.full_name}
-          width={64}
-          height={64}
-          className="rounded-full border mb-2"
-        />
-        <CardTitle className="text-xl">{profile.full_name}</CardTitle>
-        <CardDescription className="text-gray-600">{profile.headline}</CardDescription>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart className="h-5 w-5" />
+          Resume Analytics Snapshot
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 text-center">
-        <div className="text-gray-700">{profile.summary}</div>
-        <div className="flex items-center justify-center gap-3">
-          <SharePopover>
-            <Button size="sm" variant="outline">Share</Button>
-          </SharePopover>
-          <Button
-            size="sm"
-            onClick={() => onViewResume ? onViewResume() : router.push(`/resume/${resumeId}`)}
-            disabled={!resumeId}
-          >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View Resume
-          </Button>
+      <CardContent className="space-y-6">
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Views Over Time</h3>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={analyticsData.views}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="value" stroke="#8884d8" name="Views" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-          <span>
-            Last synced:{" "}
-            {profile.meta?.last_updated
-              ? new Date(profile.meta.last_updated).toLocaleString()
-              : "Unknown"}
-          </span>
-          {resumeId && (
-            <RoomProvider id={`resume-${resumeId}`} initialPresence={{}}>
-              <ViewerCount />
-            </RoomProvider>
-          )}
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Clicks Over Time</h3>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={analyticsData.clicks}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#82ca9d" name="Clicks" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Traffic Sources</h3>
+          <div className="h-48 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={analyticsData.sources}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label
+                >
+                  {analyticsData.sources.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </CardContent>
-      {syncing && (
-        <div className="absolute left-0 right-0 bottom-0 px-6 pb-4">
-          <Progress value={80} className="h-2" />
-          <p className="text-center text-sm text-gray-600 mt-1">Syncing profile…</p>
-        </div>
-      )}
     </Card>
   )
 }

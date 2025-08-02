@@ -213,6 +213,13 @@ export interface EnrichedProfile {
   personal_emails: string[]
   personal_numbers: string[]
   meta: MetaInfo
+  vanityUrl: string
+  enrichedProfile: {
+    headline: string
+    summary: string
+    skills: string[]
+    experience: { title: string; company: string; years: string }[]
+  }
 }
 
 // ----------------------
@@ -229,21 +236,44 @@ export interface ProcessedProfile extends Omit<EnrichedProfile, "experiences"> {
 }
 
 // Theme types
-export interface ResumeTheme {
-  name: string
-  colors: {
-    primary: string
-    secondary: string
-    accent: string
-    background: string
-    text: string
-  }
-  fonts: {
-    heading: string
-    body: string
-  }
-  layout: {
-    spacing: string
-    borderRadius: string
-  }
+export type ResumeTheme = "modern" | "classic" | "minimal" | "creative"
+
+// ----------------------
+// User Profile Types
+// ----------------------
+export interface UserProfile {
+  id: string
+  name: string | null
+  email: string | null
+  image: string | null
+  vanityUrl?: string | null // LinkedIn vanity URL
+  // Add any other profile fields you store in your database
+}
+
+// ----------------------
+// Enrich Layer Profile Types
+// ----------------------
+export interface EnrichLayerProfile {
+  full_name: string
+  headline: string
+  summary: string
+  experience: Array<{
+    title: string
+    company: string
+    location: string
+    start_date: string
+    end_date: string
+    description: string
+  }>
+  education: Array<{
+    degree: string
+    university: string
+    location: string
+    start_date: string
+    end_date: string
+    description: string
+  }>
+  skills: string[]
+  profile_url: string
+  // ... other fields from EnrichLayer
 }

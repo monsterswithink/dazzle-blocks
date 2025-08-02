@@ -1,12 +1,25 @@
-import type React from "react"
-import { auth } from "next-auth/react"
-import { VeltProvider } from "@veltdev/react"
+import type React from "react";
+import { SessionProvider } from "@auth/nextjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { VeltProvider } from "@/components/velt-provider";
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const veltApiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
+  const [queryClient] = useState(() =>
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60 * 1000, // 1 minute
+        },
+      },
+    })
+  );
+
   return (
     <SessionProvider>
-      <VeltProvider apiKey={VELT_PUBLIC_KEY}>{children}</VeltProvider>
+      <QueryClientProvider client={queryClient}>
+        <VeltProvider>{children}</VeltProvider>
+      </QueryClientProvider>
     </SessionProvider>
-  )
+  );
 }

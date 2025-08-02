@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react";
-import { SessionProvider } from "@auth/nextjs";
+import { SessionProvider } from "next-auth/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { VeltProvider } from "@/components/velt-provider";
 import { useState } from "react";

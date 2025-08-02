@@ -1,5 +1,5 @@
 "use client"
-import { useRoom } from "@velt/sdk"
+import { useRoom } from "@veltdev/react"
 
 interface ResumeDisplayProps {
   resumeData: any // This should be a more specific type based on your resume structure

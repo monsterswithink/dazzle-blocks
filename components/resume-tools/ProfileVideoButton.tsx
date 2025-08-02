@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Video, StopCircle, PlayCircle, Loader2 } from "lucide-react"
 import { useRoom } from "@veltdev/react"
-import { Velt } from "velt"
 import { useToast } from "@/components/ui/use-toast"
 
 export function ProfileVideoButton() {
@@ -20,7 +19,7 @@ export function ProfileVideoButton() {
       const checkRecording = async () => {
         setIsLoading(true)
         try {
-          const recordings = await Velt.getRecordings()
+          const recordings = await getRecordings()
           const hasRecording = recordings.some((rec) => rec.documentId === room.documentId)
           setIsPlaybackAvailable(hasRecording)
         } catch (error) {
@@ -37,7 +36,7 @@ export function ProfileVideoButton() {
       checkRecording()
 
       // Listen for recording events
-      const unsubscribeRecording = Velt.onRecordingStatusChange((status) => {
+      const unsubscribeRecording = onRecordingStatusChange((status) => {
         if (status === "recording") {
           setIsRecording(true)
           toast({
@@ -73,7 +72,7 @@ export function ProfileVideoButton() {
     if (isRecording) {
       setIsLoading(true)
       try {
-        await Velt.stopRecording()
+        await stopRecording()
         // Status change listener will handle setIsRecording(false)
       } catch (error) {
         console.error("Error stopping recording:", error)
@@ -88,7 +87,7 @@ export function ProfileVideoButton() {
     } else {
       setIsLoading(true)
       try {
-        await Velt.startRecording()
+        await startRecording()
         // Status change listener will handle setIsRecording(true)
       } catch (error) {
         console.error("Error starting recording:", error)
@@ -115,7 +114,7 @@ export function ProfileVideoButton() {
     setIsLoading(true)
     try {
       // This will open the Velt playback UI for the current document
-      await Velt.playRecording()
+      await playRecording()
     } catch (error) {
       console.error("Error playing recording:", error)
       toast({

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
-import { VeltProvider, useVeltClient } from "@/components/resume-providers/Velt"
+import { VeltProvider } from "@/components/resume-providers/Velt"
 import { notFound } from "next/navigation"
 
 interface ResumePageProps {

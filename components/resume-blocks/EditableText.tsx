@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
-import { useRoom } from "@velt/sdk"
+import { useRoom } from "@veltdev/react"
 import Velt from "velt"
 import type { JSX } from "react/jsx-runtime" // Import JSX to fix the undeclared variable error
 

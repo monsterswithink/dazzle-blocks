@@ -9,7 +9,6 @@ import { EditableText } from "./EditableText"
 import { CollapsibleSection } from "./CollapsibleSection"
 import { useToast } from "@/components/ui/use-toast"
 import { useRoom } from "@veltdev/react"
-import { Velt } from "velt"
 import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
 import { PresenceAvatars } from "@/components/resume-tools/PresenceAvatars"
 import { SharePopover } from "@/components/resume-tools/SharePopover"
@@ -29,7 +28,7 @@ export function ResumeEditor({ initialResumeData, resumeId }: ResumeEditorProps)
   // Initialize Velt for the entire document
   useEffect(() => {
     if (room) {
-      Velt.init({
+      init({
         documentId: resumeId,
         // Other Velt configurations can go here
       })

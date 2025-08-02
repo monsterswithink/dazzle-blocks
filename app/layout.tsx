@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import ClientLayoutComponent from "@/components/ClientLayoutComponent" // ✅ if this still exists
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -31,7 +30,7 @@ export default function RootLayout({
           <SessionProvider>
             <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!} documentId={docId}>
               <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                <ClientLayoutComponent>{children}</ClientLayoutComponent>
+                <{children}
                 <Toaster />
                 <Analytics />
                 <SpeedInsights />

@@ -3,7 +3,6 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { VeltProvider as VeltReactProvider } from "@veltdev/react"
-import { VeltClient } from "velt"
 import { useSession } from "next-auth/react"
 
 interface VeltProviderProps {

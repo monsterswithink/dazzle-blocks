@@ -1,5 +1,5 @@
 import type React from "react"
-import { SessionProvider } from "next-auth/react"
+import { auth } from "next-auth/react"
 import { VeltProvider } from "@veltdev/react"
 
 export function Providers({ children }: { children: React.ReactNode }) {

@@ -1,22 +1,36 @@
-// app/layout.tsx (your RootLayout)
+"use client"
 
-"use client";
+import { useSearchParams, Suspense } from "next/navigation"
+import { Mona_Sans as FontSans } from "next/font/google"
+import { cn } from "@/lib/utils"
+import { SessionProvider } from "next-auth/react"
+import { VeltProvider } from "@veltdev/react"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import ClientLayoutComponent from "@/components/ClientLayoutComponent" // ✅ if this still exists
 
-import { VeltProvider } from "@veltdev/react";
-// import other providers...
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode
+}) {
+  const searchParams = useSearchParams()
+  const docId = searchParams.get("doc") ?? "resume-app-root"
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("min-h-screen ...", fontSans.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <Suspense fallback={null}>
-          <SessionProvider /* optional: session={session} */>
-            {/* VeltProvider must live inside SessionProvider so auth/identify flows work */}
-            <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_API_KEY!}>
-              {/* Now Theme/UI layout and your children */}
-              <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange>
+          <SessionProvider>
+            <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!} documentId={docId}>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                 <ClientLayoutComponent>{children}</ClientLayoutComponent>
                 <Toaster />
                 <Analytics />
@@ -27,5 +41,5 @@ export default function RootLayout({
         </Suspense>
       </body>
     </html>
-  );
+  )
 }

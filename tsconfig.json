@@ -31,6 +31,7 @@
       "@/hooks/*": ["./hooks/*"],
       "@/public/*": ["./public/*"],
       "@/scripts/*": ["./scripts/*"],
+      "@/resume-providers/*": ["./components/resume-providers/*"],
       "@/utils/*": ["./utils/*"],
       "@/types/*": ["./types/*"]
     },

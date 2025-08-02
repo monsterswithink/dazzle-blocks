@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react";
 import { SessionProvider } from "@auth/nextjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

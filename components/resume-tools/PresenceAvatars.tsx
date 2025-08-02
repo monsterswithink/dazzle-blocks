@@ -1,7 +1,7 @@
 "use client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useRoom } from "@velt/react"
+import { useRoom } from "@veltdev/react"
 
 export function PresenceAvatars() {
   const { room } = useRoom()

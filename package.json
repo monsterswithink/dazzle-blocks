@@ -46,7 +46,6 @@
     "@tiptap/pm": "latest",
     "@tiptap/react": "latest",
     "@tiptap/starter-kit": "latest",
-    "@velt/react": "latest",
     "@veltdev/react": "latest",
     "@vercel/analytics": "latest",
     "@vercel/speed-insights": "latest",

@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase"
 import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
 import { VeltProvider } from "@/components/resume-providers/Velt"
 import { notFound } from "next/navigation"
-import { VeltClient } from "@veltdev/client"
 
 interface ResumePageProps {
   params: {
@@ -55,7 +54,7 @@ export default async function ResumePage({ params }: ResumePageProps) {
   }
 
   const veltClient = new VeltClient({
-    apiKey: process.env.VELT_PUBLIC_KEY!,
+    apiKey: process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!,
     userId,
     userName: session.user?.name || "Anonymous",
     userAvatar: session.user?.image || "/placeholder-user.png",

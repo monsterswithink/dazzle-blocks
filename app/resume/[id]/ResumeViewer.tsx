@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useRoom, useSelf } from "@liveblocks/react"
+import { useRoom, useSelf } from "@veltdev/react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -71,7 +71,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
         try {
           setLoading(true)
           setError(null)
-          const response = await fetch(`/api/resume/${resumeId}`) // Assuming an API route for fetching resumes
+          const response = await fetch(`/api/resume/${resumeId}`)
           if (!response.ok) {
             const errorData = await response.json()
             throw new Error(errorData.message || "Failed to fetch resume.")
@@ -110,10 +110,10 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   useEffect(() => {
     if (room) {
       room.subscribe("others", (others) => {
-        // console.log("Others in the room:", others.toArray());
+        // Optional logging
       })
       room.subscribe("my-presence", (presence) => {
-        // console.log("My presence:", presence);
+        // Optional logging
       })
     }
   }, [room])
@@ -199,7 +199,6 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   }
 
   const handleDownload = () => {
-    // Implement PDF download logic here
     alert("Download PDF functionality coming soon!")
   }
 
@@ -212,7 +211,9 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
       <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
         <div className="space-y-4 text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-gray-900 dark:text-gray-50" />
-          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">Loading resume...</h1>
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">
+            Loading resume...
+          </h1>
           <p className="text-gray-500 dark:text-gray-400">Please wait while we load the resume content.</p>
         </div>
       </div>
@@ -236,9 +237,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
       <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
         <div className="space-y-4 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Resume Not Found</h2>
-          <p className="text-gray-700 dark:text-gray-300">
-            The resume with ID &quot;{resumeId}&quot; could not be found.
-          </p>
+          <p className="text-gray-700 dark:text-gray-300">The resume with ID &quot;{resumeId}&quot; could not be found.</p>
           <Button onClick={() => router.push("/profile")}>Back to Profile</Button>
         </div>
       </div>
@@ -273,7 +272,13 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
               <Download className="w-4 h-4 mr-2" /> Download
             </Button>
             <ProfileVideoButton />
-            <Button onClick={() => setIsEditing(!isEditing)} size="sm">
+            <Button onClick={() => {
+              if (isEditing) {
+                handleSave()
+              } else {
+                setIsEditing(true)
+              }
+            }} size="sm">
               {isEditing ? "Save" : "Edit"}
             </Button>
           </div>
@@ -319,6 +324,11 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                     <div>
                       <Label htmlFor="email">Email</Label>
                       <EditableText
+                        id="email"
+                        value={resumeData.personal.email}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                                                 <EditableText
                         id="email"
                         value={resumeData.personal.email}
                         onChange={(e) =>
@@ -393,7 +403,9 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
 
                 <Collapsible
                   open={activeSection === "experience"}
-                  onOpenChange={() => setActiveSection(activeSection === "experience" ? null : "experience")}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "experience" ? null : "experience")
+                  }
                   className="space-y-2"
                 >
                   <Card>
@@ -408,7 +420,10 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                     </CardHeader>
                     <CollapsibleContent className="space-y-4 p-4 pt-0">
                       {resumeData.experience.map((exp: any, index: number) => (
-                        <div key={exp.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+                        <div
+                          key={exp.id}
+                          className="border-b pb-4 last:border-b-0 last:pb-0"
+                        >
                           <div>
                             <Label htmlFor={`exp-title-${index}`}>Title</Label>
                             <EditableText
@@ -418,7 +433,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   experience: prev.experience.map((item: any) =>
-                                    item.id === exp.id ? { ...item, title: e.target.value } : item,
+                                    item.id === exp.id ? { ...item, title: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -435,7 +450,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   experience: prev.experience.map((item: any) =>
-                                    item.id === exp.id ? { ...item, company: e.target.value } : item,
+                                    item.id === exp.id ? { ...item, company: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -451,7 +466,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   experience: prev.experience.map((item: any) =>
-                                    item.id === exp.id ? { ...item, years: e.target.value } : item,
+                                    item.id === exp.id ? { ...item, years: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -463,14 +478,14 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                             {isEditing ? (
                               <Textarea
                                 id={`exp-description-${index}`}
-                                value={exp.description.replace(/<\/?ul>|<\/?li>/g, "")} // Simple text area for editing
+                                value={exp.description.replace(/<\/?ul>|<\/?li>/g, "")}
                                 onChange={(e) =>
                                   setResumeData((prev: any) => ({
                                     ...prev,
                                     experience: prev.experience.map((item: any) =>
                                       item.id === exp.id
                                         ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
-                                        : item,
+                                        : item
                                     ),
                                   }))
                                 }
@@ -511,7 +526,9 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
 
                 <Collapsible
                   open={activeSection === "education"}
-                  onOpenChange={() => setActiveSection(activeSection === "education" ? null : "education")}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "education" ? null : "education")
+                  }
                   className="space-y-2"
                 >
                   <Card>
@@ -526,7 +543,10 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                     </CardHeader>
                     <CollapsibleContent className="space-y-4 p-4 pt-0">
                       {resumeData.education.map((edu: any, index: number) => (
-                        <div key={edu.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+                        <div
+                          key={edu.id}
+                          className="border-b pb-4 last:border-b-0 last:pb-0"
+                        >
                           <div>
                             <Label htmlFor={`edu-degree-${index}`}>Degree</Label>
                             <EditableText
@@ -536,7 +556,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   education: prev.education.map((item: any) =>
-                                    item.id === edu.id ? { ...item, degree: e.target.value } : item,
+                                    item.id === edu.id ? { ...item, degree: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -553,7 +573,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   education: prev.education.map((item: any) =>
-                                    item.id === edu.id ? { ...item, university: e.target.value } : item,
+                                    item.id === edu.id ? { ...item, university: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -569,7 +589,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                                 setResumeData((prev: any) => ({
                                   ...prev,
                                   education: prev.education.map((item: any) =>
-                                    item.id === edu.id ? { ...item, years: e.target.value } : item,
+                                    item.id === edu.id ? { ...item, years: e.target.value } : item
                                   ),
                                 }))
                               }
@@ -581,14 +601,14 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                             {isEditing ? (
                               <Textarea
                                 id={`edu-description-${index}`}
-                                value={edu.description.replace(/<\/?ul>|<\/?li>/g, "")} // Simple text area for editing
+                                value={edu.description.replace(/<\/?ul>|<\/?li>/g, "")}
                                 onChange={(e) =>
                                   setResumeData((prev: any) => ({
                                     ...prev,
                                     education: prev.education.map((item: any) =>
                                       item.id === edu.id
                                         ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
-                                        : item,
+                                        : item
                                     ),
                                   }))
                                 }
@@ -629,7 +649,9 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
 
                 <Collapsible
                   open={activeSection === "skills"}
-                  onOpenChange={() => setActiveSection(activeSection === "skills" ? null : "skills")}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "skills" ? null : "skills")
+                  }
                   className="space-y-2"
                 >
                   <Card>
@@ -650,7 +672,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
                           setResumeData((prev: any) => ({
                             ...prev,
                             skills: prev.skills.map((skill: any) =>
-                              skill.id === id ? { ...skill, name: newName, level: newLevel } : skill,
+                              skill.id === id ? { ...skill, name: newName, level: newLevel } : skill
                             ),
                           }))
                         }

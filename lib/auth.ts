@@ -18,8 +18,9 @@ declare module "next-auth" {
     vanityUrl?: string | null
   }
 }
-
-export const authConfig = {
+import NextAuth from "next-auth"
+ 
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     LinkedIn({
       clientId: process.env.LINKEDIN_CLIENT_ID,

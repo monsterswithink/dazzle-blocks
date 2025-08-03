@@ -24,28 +24,6 @@ import {
   useIdentify,
 } from "@veltdev/react"
 
-/* In your _app.tsx or root layout:
-––––––––––––––––––––––––––––––––––––––––––––––––––––––––————
-<VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_KEY!}>
-  <AuthBoundary /* your auth logic */>
-    <ResumeEditor documentId={resumeId} />
-  </AuthBoundary>
-</VeltProvider>
-
-export function AuthBoundary({ children }) {
-  const { user } = useSession()  // supabase auth example
-  useIdentify(user.id) // identifies Velt user
-  return children
-}
-
-function ResumeEditor({ documentId }) {
-  useSetDocumentId(documentId)
-  // keep your Tiptap + CRDT logic here (e.g. createVeltTipTapStore, etc.)
-  return <ProfileSnapshotCard />
-}
-––––––––––––––––––––––––––––––––––––––––––––––––––––––––————
-*/
-
 interface AnalyticsByDate {
   date: string
   count: number

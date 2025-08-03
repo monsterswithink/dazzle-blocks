@@ -15,28 +15,32 @@ export function ResumeDisplay({ resumeData }: ResumeDisplayProps) {
   }
 
   const {
-    name,
-    email,
-    phone,
-    linkedinUrl,
-    title,
+    full_name,
+    occupation,
+    personal_emails,
+    personal_numbers,
+    vanityUrl,
     summary,
     experiences,
     education,
     skills,
-    projects,
-    awards,
+    accomplishment_projects,
+    accomplishment_honors_awards,
   } = resumeData
+
+  const getFormattedDate = (d: { formatted: string } | null) =>
+    d?.formatted || "Present"
 
   return (
     <div className="w-full max-w-3xl rounded-lg border bg-white p-8 shadow-lg">
-      <h1 className="mb-4 text-3xl font-bold">{name || "Your Name"}</h1>
+      <h1 className="mb-4 text-3xl font-bold">{full_name || "Your Name"}</h1>
       <p className="mb-6 text-gray-600">
-        {title || "Your Title"} | {email || "email@example.com"} | {phone || "123-456-7890"} |{" "}
-        {linkedinUrl || "linkedin.com/in/yourprofile"}
+        {occupation || "Your Title"} | {personal_emails?.[0] || "email@example.com"} |{" "}
+        {personal_numbers?.[0] || "123-456-7890"} |{" "}
+        {vanityUrl ? `linkedin.com/in/${vanityUrl}` : "linkedin.com/in/yourprofile"}
       </p>
 
-      {summary && (
+      {!!summary && (
         <section className="mb-6">
           <h2 className="mb-2 border-b pb-1 text-xl font-semibold">Summary</h2>
           <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: summary }} />
@@ -53,7 +57,7 @@ export function ResumeDisplay({ resumeData }: ResumeDisplayProps) {
                 {exp.company} {exp.location ? `| ${exp.location}` : ""}
               </p>
               <p className="text-sm text-gray-500">
-                {exp.startDate} – {exp.endDate || "Present"}
+                {getFormattedDate(exp.starts_at)} – {getFormattedDate(exp.ends_at)} ({exp.duration})
               </p>
               <div className="prose prose-sm mt-1" dangerouslySetInnerHTML={{ __html: exp.description ?? "" }} />
             </div>
@@ -68,10 +72,10 @@ export function ResumeDisplay({ resumeData }: ResumeDisplayProps) {
             <div key={i} className="mb-4">
               <h3 className="font-semibold">{edu.degree}</h3>
               <p className="text-gray-700">
-                {edu.university} {edu.location ? `| ${edu.location}` : ""}
+                {edu.school} {edu.location ? `| ${edu.location}` : ""}
               </p>
               <p className="text-sm text-gray-500">
-                {edu.startDate} – {edu.endDate || "Present"}
+                {edu.starts_at?.year} – {edu.ends_at?.year || "Present"}
               </p>
               <div className="prose prose-sm mt-1" dangerouslySetInnerHTML={{ __html: edu.description ?? "" }} />
             </div>
@@ -92,29 +96,29 @@ export function ResumeDisplay({ resumeData }: ResumeDisplayProps) {
         </section>
       )}
 
-      {projects?.length > 0 && (
+      {accomplishment_projects?.length > 0 && (
         <section className="mb-6">
           <h2 className="mb-2 border-b pb-1 text-xl font-semibold">Projects</h2>
-          {projects.map((project, i) => (
+          {accomplishment_projects.map((proj, i) => (
             <div key={i} className="mb-4">
-              <h3 className="font-semibold">{project.title}</h3>
+              <h3 className="font-semibold">{proj.title}</h3>
               <p className="text-sm text-gray-500">
-                {project.startDate} – {project.endDate || "Present"}
+                {proj.starts_at?.year || "Start"} – {proj.ends_at?.year || "Present"}
               </p>
-              <div className="prose prose-sm mt-1" dangerouslySetInnerHTML={{ __html: project.description ?? "" }} />
+              <div className="prose prose-sm mt-1" dangerouslySetInnerHTML={{ __html: proj.description ?? "" }} />
             </div>
           ))}
         </section>
       )}
 
-      {awards?.length > 0 && (
+      {accomplishment_honors_awards?.length > 0 && (
         <section className="mb-6">
           <h2 className="mb-2 border-b pb-1 text-xl font-semibold">Awards</h2>
-          {awards.map((award, i) => (
+          {accomplishment_honors_awards.map((award, i) => (
             <div key={i} className="mb-4">
               <h3 className="font-semibold">{award.title}</h3>
               <p className="text-gray-700">{award.issuer}</p>
-              <p className="text-sm text-gray-500">{award.date}</p>
+              <p className="text-sm text-gray-500">{award.issued_on?.year}</p>
               <div className="prose prose-sm mt-1" dangerouslySetInnerHTML={{ __html: award.description ?? "" }} />
             </div>
           ))}

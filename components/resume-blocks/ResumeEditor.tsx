@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
+import { VeltProvider, VeltCursor } from '@veltdev/react'
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor"
 
 import {
   createVeltTipTapStore,
@@ -64,7 +64,7 @@ export function EditableText({
       ...(veltTiptapStore
         ? [
             veltTiptapStore.getCollabExtension(),
-            CollaborationCursor.configure({
+            VeltCursor.configure({
               provider: veltTiptapStore.getStore().getProvider(),
               user: veltUser,
             }),

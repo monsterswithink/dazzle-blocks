@@ -1,6 +1,7 @@
 import LinkedIn from "next-auth/providers/linkedin"
 import { supabase } from "./supabase"
 import { handlers } from "@auth/nextjs"
+import NextAuth from "next-auth"
 
 // Extend the Session and User types to include custom fields like vanityUrl
 declare module "next-auth" {
@@ -18,7 +19,6 @@ declare module "next-auth" {
     vanityUrl?: string | null
   }
 }
-import NextAuth from "next-auth"
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [

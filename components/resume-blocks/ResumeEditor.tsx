@@ -11,7 +11,7 @@ import {
   VeltTipTapStore,
 } from "@veltdev/tiptap-crdt"
 
-import { useVeltClient, useIdentity } from "@veltdev/react"
+import { useVeltClient, useVeltEventCallback } from "@veltdev/react"
 
 import type { JSX } from "react/jsx-runtime"
 
@@ -34,7 +34,7 @@ export function EditableText({
 }: EditableTextProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const veltClient = useVeltClient()
-  const useIdentity = useVeltUser()
+  const veltUser = useVeltEventCallback('userUpdate');
 
   const [veltTiptapStore, setVeltTiptapStore] = useState<VeltTipTapStore | null>(null)
 

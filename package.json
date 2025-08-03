@@ -59,17 +59,18 @@
     "next-auth": "latest",
     "next-themes": "latest",
     "nodemailer": "latest",
-    "react": "^18",
+    "react": "18.2.0",
+"react-dom": "18.2.0",
     "react-day-picker": "latest",
     "react-hook-form": "latest",
     "react-resizable-panels": "latest",
-    "react-router-dom": "latest",
+    "react-router-dom": "^6.14.1"
     "recharts": "latest",
     "sonner": "latest",
     "svelte": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "tiptap-markdown": "^0.8.0",
+    "tiptap-markdown":react "^0.8.0",
     "vaul": "latest",
     "velt": "latest",
     "vue": "latest",
@@ -78,8 +79,8 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "18.0.38"
+    "@types/react": "18.0.38"
     "postcss": "^8.5",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",

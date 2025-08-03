@@ -20,7 +20,7 @@ declare module "next-auth" {
   }
 }
  
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth(
   providers: [
     LinkedIn({
       clientId: process.env.LINKEDIN_CLIENT_ID,

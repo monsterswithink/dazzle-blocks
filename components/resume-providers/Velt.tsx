@@ -1,53 +1,28 @@
 "use client"
 
-import type React from "react"
-import { useEffect, useState } from "react"
-import { VeltProvider as VeltReactProvider } from "@veltdev/react"
-import { useSession } from "next-auth/react"
+import { ReactNode, useEffect } from "react"
+import { VeltProvider as BaseVeltProvider, useSetDocumentId } from "@veltdev/react"
 
-interface VeltProviderProps {
-  children: React.ReactNode
+interface Props {
+  children: ReactNode
   documentId: string
-  client?: VeltClient // Optional: pass a pre-initialized client
 }
 
-export function VeltProvider({ children, documentId, client }: VeltProviderProps) {
-  const { data: session, status } = useSession()
-  const [veltClientInstance, setVeltClientInstance] = useState<VeltClient | null>(null)
+function DocumentIdInitializer({ documentId }: { documentId: string }) {
+  const setDocumentId = useSetDocumentId()
 
   useEffect(() => {
-    if (status === "authenticated" && !veltClientInstance) {
-      const userId = session.user?.id || session.user?.email || "anonymous"
-      const userName = session.user?.name || "Anonymous User"
-      const userAvatar = session.user?.image || "/placeholder-user.png"
+    setDocumentId(documentId)
+  }, [documentId, setDocumentId])
 
-      const newClient =
-        client ||
-        new VeltClient({
-          apiKey: process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!,
-          userId: userId,
-          userName: userName,
-          userAvatar: userAvatar,
-        })
-      setVeltClientInstance(newClient)
-    } else if (status === "unauthenticated" && veltClientInstance) {
-      // Optionally destroy client if user logs out
-      veltClientInstance.destroy()
-      setVeltClientInstance(null)
-    }
-  }, [session, status, veltClientInstance, client])
+  return null
+}
 
-  if (status === "loading" || !veltClientInstance) {
-    return (
-      <div className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center gap-4 py-10">
-        <p className="text-lg text-gray-600">Initializing collaboration...</p>
-      </div>
-    )
-  }
-
+export function VeltProvider({ children, documentId }: Props) {
   return (
-    <VeltReactProvider client={veltClientInstance} documentId={documentId}>
+    <BaseVeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!}>
+      <DocumentIdInitializer documentId={documentId} />
       {children}
-    </VeltReactProvider>
+    </BaseVeltProvider>
   )
 }

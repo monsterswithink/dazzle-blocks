@@ -70,7 +70,7 @@
     "svelte": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "tiptap-markdown":react "^0.8.0",
+    "tiptap-markdown": "^0.8.0",
     "vaul": "latest",
     "velt": "latest",
     "vue": "latest",
@@ -79,7 +79,6 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "18.0.38",
     "@types/react": "18.0.38",
     "postcss": "^8.5",
     "prettier": "^3.2.5",

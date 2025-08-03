@@ -87,7 +87,7 @@ export function ProfileSnapshotCard() {
     <div className="w-full max-w-2xl p-4 bg-white rounded-lg shadow">
       <h2 className="mb-4 text-xl font-semibold flex items-center gap-2">
         Resume Analytics Snapshot
-        <VeltViewAnalytics /* optional widget, upper-right corner */ />
+        <VeltViewAnalytics />
       </h2>
 
       <h3 className="mt-2 font-semibold">👁️ Views Over Time</h3>

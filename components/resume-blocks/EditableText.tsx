@@ -1,17 +1,12 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor"
-
-import {
-  createVeltTipTapStore,
-  VeltTipTapStore,
-} from "@veltdev/tiptap-crdt"
-
-import type { JSX } from "react/jsx-runtime"
+import { createVeltTipTapStore } from "@veltdev/tiptap-crdt"
+import { supabase } from "@/lib/supabase"
 
 interface EditableTextProps {
   initialContent: string
@@ -31,40 +26,51 @@ export function EditableText({
   editorId,
 }: EditableTextProps) {
   const editorRef = useRef<HTMLDivElement>(null)
-  const veltTiptapStoreRef = useRef<VeltTipTapStore | null>(null)
-
-  // 👥 You can customize this or fetch it from session
-  const veltUser = {
+  const [veltStore, setVeltStore] = useState<any>(null)
+  const [user, setUser] = useState<{ name: string; color: string }>({
     name: "Anonymous",
-    color: "#22C55E",
-  }
+    color: "#3b82f6", // 💙 Tailwind blue-500 fallback
+  })
 
   useEffect(() => {
-    // ⛳ init Velt CRDT store once
-    veltTiptapStoreRef.current = createVeltTipTapStore({
-      documentId: editorId, // like 'resume-123'
-    })
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser()
 
-    return () => {
-      // 🧹 cleanup
-      veltTiptapStoreRef.current?.destroy()
-      veltTiptapStoreRef.current = null
+      if (data?.user) {
+        setUser({
+          name: data.user.email ?? "Unnamed",
+          color: "#16a34a", // 💚 Tailwind green-600
+        })
+      }
     }
+
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    const initializeStore = async () => {
+      if (!editorId) return
+
+      const store = await createVeltTipTapStore({
+        documentId: editorId,
+      })
+
+      setVeltStore(store)
+    }
+
+    initializeStore()
   }, [editorId])
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ history: false }),
-      Link.configure({
-        openOnClick: true,
-        autolink: true,
-      }),
-      ...(veltTiptapStoreRef.current
+      Link.configure({ autolink: true }),
+      ...(veltStore
         ? [
-            veltTiptapStoreRef.current.getCollabExtension(),
+            veltStore.getCollabExtension(),
             CollaborationCursor.configure({
-              provider: veltTiptapStoreRef.current.getStore().getProvider(),
-              user: veltUser,
+              provider: veltStore.getStore().getProvider(),
+              user,
             }),
           ]
         : []),
@@ -76,17 +82,14 @@ export function EditableText({
     editorProps: {
       attributes: {
         class: "ProseMirror min-h-[1em] focus:outline-none",
-        "data-placeholder": placeholder,
+        "data-placeholder": placeholder || "",
       },
     },
   })
 
-  // 🔁 Sync if external `initialContent` changes
   useEffect(() => {
-    if (editor && editor.getHTML() !== initialContent) {
-      editor.commands.setContent(initialContent, false, {
-        preserveCursor: true,
-      })
+    if (editor && initialContent && editor.getHTML() !== initialContent) {
+      editor.commands.setContent(initialContent, false, { preserveCursor: true })
     }
   }, [editor, initialContent])
 

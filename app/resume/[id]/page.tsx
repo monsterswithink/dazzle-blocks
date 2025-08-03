@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
 import { VeltProvider } from "@/components/resume-providers/Velt"
 import { notFound } from "next/navigation"
+import { VeltClient } from "@veltdev/client"
 
 interface ResumePageProps {
   params: {
@@ -38,28 +39,24 @@ export default async function ResumePage({ params }: ResumePageProps) {
     if (fetchError) {
       console.error("Error fetching resume:", fetchError)
       if (fetchError.code === "PGRST116") {
-        // No rows found
-        notFound() // Trigger Next.js not-found page
+        notFound()
       }
-      // For other errors, we might still want to show an error message
-      // or redirect, but for now, let's assume notFound covers it.
       notFound()
     }
 
     if (!resume) {
-      notFound() // Resume not found or not owned by user
+      notFound()
     }
 
     resumeContent = resume.content
   } catch (e) {
     console.error("Unexpected error in resume fetching:", e)
-    notFound() // Catch any unexpected errors and show not found
+    notFound()
   }
 
-  // Initialize Velt client for server-side rendering (optional, but good practice)
   const veltClient = new VeltClient({
     apiKey: process.env.VELT_PUBLIC_KEY!,
-    userId: userId,
+    userId,
     userName: session.user?.name || "Anonymous",
     userAvatar: session.user?.image || "/placeholder-user.png",
   })

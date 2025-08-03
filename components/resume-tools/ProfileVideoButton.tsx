@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Video, StopCircle, PlayCircle, Loader2 } from "lucide-react"
 import { useRoom } from "@veltdev/react"
 import { useToast } from "@/components/ui/use-toast"
+import { Recorder } from "@veltdev/recorder"
 
 export function ProfileVideoButton() {
   const { room } = useRoom()
@@ -15,11 +16,14 @@ export function ProfileVideoButton() {
 
   useEffect(() => {
     if (room) {
+      // Initialize the Velt Recorder
+      const recorder = new Recorder(room.documentId)
+
       // Check if a recording exists for this document
       const checkRecording = async () => {
         setIsLoading(true)
         try {
-          const recordings = await getRecordings()
+          const recordings = await recorder.getRecordings()
           const hasRecording = recordings.some((rec) => rec.documentId === room.documentId)
           setIsPlaybackAvailable(hasRecording)
         } catch (error) {
@@ -36,7 +40,7 @@ export function ProfileVideoButton() {
       checkRecording()
 
       // Listen for recording events
-      const unsubscribeRecording = onRecordingStatusChange((status) => {
+      const unsubscribeRecording = recorder.onRecordingStatusChange((status) => {
         if (status === "recording") {
           setIsRecording(true)
           toast({
@@ -69,10 +73,12 @@ export function ProfileVideoButton() {
       return
     }
 
+    const recorder = new Recorder(room.documentId)
+
     if (isRecording) {
       setIsLoading(true)
       try {
-        await stopRecording()
+        await recorder.stopRecording()
         // Status change listener will handle setIsRecording(false)
       } catch (error) {
         console.error("Error stopping recording:", error)
@@ -87,7 +93,7 @@ export function ProfileVideoButton() {
     } else {
       setIsLoading(true)
       try {
-        await startRecording()
+        await recorder.startRecording()
         // Status change listener will handle setIsRecording(true)
       } catch (error) {
         console.error("Error starting recording:", error)
@@ -113,8 +119,9 @@ export function ProfileVideoButton() {
     }
     setIsLoading(true)
     try {
+      const recorder = new Recorder(room.documentId)
       // This will open the Velt playback UI for the current document
-      await playRecording()
+      await recorder.playRecording()
     } catch (error) {
       console.error("Error playing recording:", error)
       toast({

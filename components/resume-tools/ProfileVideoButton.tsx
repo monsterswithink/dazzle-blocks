@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Video, StopCircle, PlayCircle, Loader2 } from "lucide-react"
+import { Video, PlayCircle, Loader2 } from "lucide-react"
 import { useVeltClient } from "@veltdev/react"
 import { toast } from "sonner"
 
@@ -53,9 +53,9 @@ export function ProfileVideoButton() {
 
   const handleRecordVideo = () => {
     if (veltClient) {
-      veltClient.toggleRecorder()
+      veltClient.recordVideo()
     } else {
-      toast.error("Velt client not initialized.")
+      toast.error("Velt client not initialized. Cannot record video.")
     }
   }
 
@@ -79,15 +79,8 @@ export function ProfileVideoButton() {
 
   return (
     <div className="flex gap-2">
-      <Button onClick={handleRecordVideo} disabled={isLoading} variant={isRecording ? "destructive" : "default"}>
-        {isLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : isRecording ? (
-          <StopCircle className="mr-2 h-4 w-4" />
-        ) : (
-          <Video className="mr-2 h-4 w-4" />
-        )}
-        {isRecording ? "Stop Recording" : "Record Video"}
+      <Button variant="outline" size="sm" onClick={handleRecordVideo}>
+        <Video className="w-4 h-4 mr-2" /> Record Video
       </Button>
       {isPlaybackAvailable && (
         <Button onClick={handlePlayback} disabled={isLoading || isRecording} variant="outline">

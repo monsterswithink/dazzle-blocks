@@ -1,26 +1,27 @@
 "use client"
 
+import { useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Share2, Check } from "lucide-react"
-import { useState } from "react"
 import { toast } from "sonner"
 
 interface SharePopoverProps {
-  resumeId: string
   isOpen: boolean
   onOpenChange: (open: boolean) => void
+  resumeId: string
 }
 
-export function SharePopover({ resumeId, isOpen, onOpenChange }: SharePopoverProps) {
+export function SharePopover({ isOpen, onOpenChange, resumeId }: SharePopoverProps) {
   const [copied, setCopied] = useState(false)
   const shareLink = `${window.location.origin}/resume/${resumeId}/view`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareLink)
     setCopied(true)
-    toast.success("Link copied to clipboard!")
+    toast.success("Share link copied to clipboard!")
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -35,14 +36,17 @@ export function SharePopover({ resumeId, isOpen, onOpenChange }: SharePopoverPro
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Share Resume</h4>
-            <p className="text-sm text-muted-foreground">Anyone with this link can view your resume.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Anyone with this link can view your resume.</p>
           </div>
-          <div className="flex space-x-2">
-            <Input value={shareLink} readOnly className="flex-1" />
-            <Button onClick={handleCopy} size="sm">
-              {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-              <span className="sr-only">{copied ? "Copied" : "Copy"}</span>
-            </Button>
+          <div className="grid gap-2">
+            <Label htmlFor="share-link">Shareable link</Label>
+            <div className="flex space-x-2">
+              <Input id="share-link" defaultValue={shareLink} readOnly />
+              <Button size="sm" onClick={handleCopy}>
+                {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                <span className="sr-only">{copied ? "Copied" : "Copy"}</span>
+              </Button>
+            </div>
           </div>
         </div>
       </PopoverContent>

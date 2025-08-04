@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu"
-import { Check, ChevronRight, DotIcon as DotFilled } from "lucide-react"
+import { Check, ChevronRight, Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import type { ContextMenuItemProps } from "@/types" // Declare the variable here
 
 const ContextMenu = ContextMenuPrimitive.Root
 
@@ -27,8 +28,7 @@ ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName
 
 const ContextMenuItem = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> &
-    Pick<ContextMenuPrimitive.ItemProps, "onSelect" | "disabled">
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & Pick<ContextMenuItemProps, "inset">
 >(({ className, inset, ...props }, ref) => (
   <ContextMenuPrimitive.Item
     ref={ref}
@@ -79,7 +79,7 @@ const ContextMenuRadioItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <ContextMenuPrimitive.ItemIndicator>
-        <DotFilled className="h-4 w-4 fill-current" />
+        <Dot className="h-4 w-4 fill-current" />
       </ContextMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -89,9 +89,7 @@ ContextMenuRadioItem.displayName = ContextMenuPrimitive.RadioItem.displayName
 
 const ContextMenuLabel = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & {
-    inset?: boolean
-  }
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & Pick<ContextMenuItemProps, "inset">
 >(({ className, inset, ...props }, ref) => (
   <ContextMenuPrimitive.Label
     ref={ref}
@@ -118,9 +116,7 @@ const ContextMenuSub = ContextMenuPrimitive.Sub
 
 const ContextMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & {
-    inset?: boolean
-  }
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & Pick<ContextMenuItemProps, "inset">
 >(({ className, inset, children, ...props }, ref) => (
   <ContextMenuPrimitive.SubTrigger
     ref={ref}

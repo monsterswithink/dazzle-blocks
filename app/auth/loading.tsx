@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react"
 
-export default function AuthLoading() {
+export default function Loading() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="space-y-4 text-center">

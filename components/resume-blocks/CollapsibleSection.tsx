@@ -1,32 +1,69 @@
 "use client"
 
-import * as React from "react"
-import { ChevronDown } from "lucide-react"
+import type React from "react"
 
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Button } from "@/components/ui/button"
+import { ChevronDown, Plus, Minus } from "lucide-react"
 
 interface CollapsibleSectionProps {
   title: string
-  children: React.ReactNode
-  defaultOpen?: boolean
+  items: any[]
+  isEditing: boolean
+  onAddItem: () => void
+  onRemoveItem: (id: number) => void
+  onItemChange: (id: number, field: string, value: string) => void
+  renderItem: (
+    item: any,
+    index: number,
+    isEditing: boolean,
+    onItemChange: (id: number, field: string, value: string) => void,
+  ) => React.ReactNode
 }
 
-export function CollapsibleSection({ title, children, defaultOpen = true }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen)
+export function CollapsibleSection({
+  title,
+  items,
+  isEditing,
+  onAddItem,
+  onRemoveItem,
+  onItemChange,
+  renderItem,
+}: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full space-y-2">
-      <div className="flex items-center justify-between space-x-4 px-4">
-        <h4 className="text-lg font-semibold">{title}</h4>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" className="w-9 p-0">
-            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-            <span className="sr-only">Toggle</span>
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-      <CollapsibleContent className="space-y-2 px-4 pb-4">{children}</CollapsibleContent>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-9 p-0">
+              <ChevronDown className="h-4 w-4" />
+              <span className="sr-only">Toggle {title}</span>
+            </Button>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent className="space-y-4 p-4 pt-0">
+          {items.map((item, index) => (
+            <div key={item.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+              {renderItem(item, index, isEditing, onItemChange)}
+              {isEditing && (
+                <Button variant="destructive" size="sm" onClick={() => onRemoveItem(item.id)} className="mt-2">
+                  <Minus className="w-4 h-4 mr-2" /> Remove
+                </Button>
+              )}
+            </div>
+          ))}
+          {isEditing && (
+            <Button variant="outline" size="sm" onClick={onAddItem} className="w-full mt-4 bg-transparent">
+              <Plus className="w-4 h-4 mr-2" /> Add {title.slice(0, -1)}
+            </Button>
+          )}
+        </CollapsibleContent>
+      </Card>
     </Collapsible>
   )
 }

@@ -1,101 +1,60 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
-import type { Profile } from "@/types/profile"
 
 export function ProfileSnapshotCard() {
-  const [linkedinUrl, setLinkedinUrl] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [enrichedProfile, setEnrichedProfile] = useState<Profile | null>(null)
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
-  const handleEnrichProfile = async () => {
-    if (!linkedinUrl) {
-      toast.error("Please enter a LinkedIn profile URL.")
-      return
-    }
+  if (status === "loading") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center p-6">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </CardContent>
+      </Card>
+    )
+  }
 
-    setLoading(true)
-    setEnrichedProfile(null)
-    try {
-      const response = await fetch("/api/enrich", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ linkedinUrl }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to enrich profile.")
-      }
-
-      const data = await response.json()
-      setEnrichedProfile(data.profile)
-      toast.success("Profile enriched successfully!")
-    } catch (error: any) {
-      console.error("Error enriching profile:", error)
-      toast.error("Failed to enrich profile.", {
-        description: error.message || "An unknown error occurred.",
-      })
-    } finally {
-      setLoading(false)
-    }
+  if (status === "unauthenticated") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center p-6">
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Sign in to view and manage your profile.</p>
+          <Button onClick={() => router.push("/auth/signin")}>Sign In</Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enrich Profile from LinkedIn</CardTitle>
-        <CardDescription>
-          Enter a LinkedIn profile URL to automatically extract and populate resume data.
-        </CardDescription>
+        <CardTitle>Your Profile</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
-          <Input
-            id="linkedin-url"
-            placeholder="https://www.linkedin.com/in/johndoe"
-            value={linkedinUrl}
-            onChange={(e) => setLinkedinUrl(e.target.value)}
-            disabled={loading}
-          />
+      <CardContent className="flex items-center gap-4 p-6">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={session?.user?.image || "/placeholder-user.jpg"} alt={session?.user?.name || "User"} />
+          <AvatarFallback>{session?.user?.name?.charAt(0) || "U"}</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-1">
+          <div className="font-semibold">{session?.user?.name}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{session?.user?.email}</div>
+          <Button variant="link" className="p-0 h-auto justify-start" onClick={() => router.push("/profile")}>
+            View/Edit Profile
+          </Button>
         </div>
-        <Button onClick={handleEnrichProfile} disabled={loading} className="w-full">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enriching...
-            </>
-          ) : (
-            "Enrich Profile"
-          )}
-        </Button>
-
-        {enrichedProfile && (
-          <div className="mt-6 space-y-4">
-            <h3 className="text-lg font-semibold">Enriched Data Preview:</h3>
-            <p>
-              <strong>Name:</strong> {enrichedProfile.name}
-            </p>
-            <p>
-              <strong>Headline:</strong> {enrichedProfile.headline}
-            </p>
-            <p>
-              <strong>Email:</strong> {enrichedProfile.email}
-            </p>
-            {/* You can display more fields here */}
-            <Button variant="outline" className="w-full bg-transparent">
-              Apply to Resume (Coming Soon)
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

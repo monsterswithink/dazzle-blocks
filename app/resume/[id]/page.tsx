@@ -1,35 +1,21 @@
-import { notFound } from "next/navigation"
-import { getResumeById } from "@/lib/resume-service"
-import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { Suspense } from "react"
+import ResumeViewer from "./ResumeViewer"
+import { Loader2 } from "lucide-react"
 
-interface ResumeViewPageProps {
-  params: {
-    id: string
-  }
-}
-
-export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
-  const session = await auth()
-
-  if (!session) {
-    redirect("/auth/signin")
-  }
-
-  const resumeId = params.id
-  const resumeData = await getResumeById(resumeId)
-
-  if (!resumeData) {
-    notFound()
-  }
-
-  // You might want to add logic here to check if the current user has permission to view this resume
-  // For now, we'll assume if it's found, it's viewable.
-
+export default function ResumePage({ params }: { params: { id: string } }) {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 py-12">
-      <ResumeDisplay resumeData={resumeData} theme="modern" /> {/* Default theme for view mode */}
-    </div>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+          <div className="space-y-4 text-center">
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-gray-900 dark:text-gray-50" />
+            <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">Loading resume...</h1>
+            <p className="text-gray-500 dark:text-gray-400">Please wait while we load the resume content.</p>
+          </div>
+        </div>
+      }
+    >
+      <ResumeViewer resumeId={params.id} />
+    </Suspense>
   )
 }

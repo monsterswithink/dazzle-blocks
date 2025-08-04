@@ -1,751 +1,929 @@
 # Step 1: Implement the Floating Toolbar
 
-This step guides you through creating a floating toolbar for the Tiptap editor, which will appear when text is selected, allowing users to format their resume content.
+The `FloatingToolbar` component will provide rich text editing capabilities for the "About Me" section of the resume.
 
-## Files to Create/Modify
+**Files to create/modify:**
 
--   `components/resume-tools/FloatingToolbar.tsx` (New File)
--   `components/resume-blocks/ResumeEditor.tsx` (Modify)
+1.  `components/resume-tools/FloatingToolbar.tsx` (New file)
+2.  `components/resume-blocks/EditableText.tsx` (New file)
+3.  `app/resume/[id]/ResumeViewer.tsx` (Modify existing file)
 
-## Implementation Details
+---
 
-### `components/resume-tools/FloatingToolbar.tsx`
+## `components/resume-tools/FloatingToolbar.tsx`
 
-This component will be a client component that provides basic text formatting options (bold, italic, underline, link, lists, headings, code block). It will use `@tiptap/react`'s `useEditor` hook (or `Velt.getActiveEditor()` in a real Velt integration) to apply formatting to the active editor instance.
+This component will be a floating toolbar that appears when the `About Me` section is in edit mode. It will contain buttons for common text formatting options (bold, italic, underline, strikethrough, code, bullet list, ordered list, link).
 
 \`\`\`tsx
-// components/resume-tools/FloatingToolbar.tsx
-"use client"
+'use client'
 
-import React from "react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Bold, Italic, Underline, Link, List, ListOrdered, Heading1, Heading2, Heading3, Code } from 'lucide-react'
-import { useEditor } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import TiptapLink from "@tiptap/extension-link" // Renamed to avoid conflict with Lucide Link
+import { Editor } from '@tiptap/react'
+import { Bold, Italic, Underline, Strikethrough, Code, List, ListOrdered, Link, Unlink } from 'lucide-react'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Label } from '@/components/ui/label'
+import { useState } from 'react'
 
 interface FloatingToolbarProps {
-  // No props needed as it interacts directly with the active Tiptap editor
+  editor: Editor | null
 }
 
-export function FloatingToolbar() {
-  // This component needs to interact with the currently active Tiptap editor.
-  // Velt's `initEditor` function makes the editor instance globally accessible
-  // via `Velt.getActiveEditor()`.
-  // This is a simplified example. In a real application, you might pass the editor
-  // instance down via context or use a more robust state management for toolbars.
-
-  // For demonstration, we'll create a dummy editor to show the toolbar functionality.
-  // In a real scenario, this toolbar would connect to the `editor` instance
-  // from `EditableText` component via Velt's active editor mechanism.
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3, 4, 5, 6],
-        },
-      }),
-      TiptapLink.configure({
-        openOnClick: false, // Prevent opening link when clicking in editor
-        autolink: true,
-      }),
-    ],
-    content: "<p>This is a dummy editor for toolbar demo.</p>",
-    editable: false, // Make it non-editable for this demo
-  })
+export function FloatingToolbar({ editor }: FloatingToolbarProps) {
+  const [linkUrl, setLinkUrl] = useState('')
+  const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false)
 
   if (!editor) {
     return null
   }
 
   const setLink = () => {
-    const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('URL', previousUrl)
-
-    // cancelled
-    if (url === null) {
+    if (linkUrl === null) {
       return
     }
 
-    // empty
-    if (url === '') {
+    if (linkUrl === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
       return
     }
 
-    // update link
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl, target: '_blank' }).run()
+    setLinkUrl('')
+    setIsLinkPopoverOpen(false)
+  }
+
+  const handleLinkButtonClick = () => {
+    const previousUrl = editor.getAttributes('link').href
+    setLinkUrl(previousUrl || '')
+    setIsLinkPopoverOpen(true)
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded-md border bg-white p-2 shadow-lg z-50">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <Heading1 className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-            <Heading1 className="mr-2 h-4 w-4" />
-            Heading 1
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-            <Heading2 className="mr-2 h-4 w-4" />
-            Heading 2
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
-            <Heading3 className="mr-2 h-4 w-4" />
-            Heading 3
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()}>
-            <span className="mr-2 h-4 w-4">¶</span>
-            Paragraph
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={editor.isActive("bold") ? "is-active" : ""}
-      >
-        <Bold className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={editor.isActive("italic") ? "is-active" : ""}
-      >
-        <Italic className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        disabled={!editor.can().chain().focus().toggleUnderline().run()}
-        className={editor.isActive("underline") ? "is-active" : ""}
-      >
-        <Underline className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={setLink}
-        className={editor.isActive('link') ? 'is-active' : ''}
-      >
-        <Link className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        disabled={!editor.can().chain().focus().toggleBulletList().run()}
-        className={editor.isActive("bulletList") ? "is-active" : ""}
-      >
-        <List className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        disabled={!editor.can().chain().focus().toggleOrderedList().run()}
-        className={editor.isActive("orderedList") ? "is-active" : ""}
-      >
-        <ListOrdered className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        disabled={!editor.can().chain().focus().toggleCodeBlock().run()}
-        className={editor.isActive("codeBlock") ? "is-active" : ""}
-      >
-        <Code className="h-4 w-4" />
-      </Button>
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 p-2 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+      <ToggleGroup type="multiple" size="sm" className="gap-1">
+        <ToggleGroupItem
+          value="bold"
+          aria-label="Toggle bold"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          disabled={!editor.can().chain().focus().toggleBold().run()}
+          data-state={editor.isActive('bold') ? 'on' : 'off'}
+        >
+          <Bold className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="italic"
+          aria-label="Toggle italic"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          disabled={!editor.can().chain().focus().toggleItalic().run()}
+          data-state={editor.isActive('italic') ? 'on' : 'off'}
+        >
+          <Italic className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="underline"
+          aria-label="Toggle underline"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          disabled={!editor.can().chain().focus().toggleUnderline().run()}
+          data-state={editor.isActive('underline') ? 'on' : 'off'}
+        >
+          <Underline className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="strike"
+          aria-label="Toggle strikethrough"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          disabled={!editor.can().chain().focus().toggleStrike().run()}
+          data-state={editor.isActive('strike') ? 'on' : 'off'}
+        >
+          <Strikethrough className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="code"
+          aria-label="Toggle code"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          disabled={!editor.can().chain().focus().toggleCode().run()}
+          data-state={editor.isActive('code') ? 'on' : 'off'}
+        >
+          <Code className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="bulletList"
+          aria-label="Toggle bullet list"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          disabled={!editor.can().chain().focus().toggleBulletList().run()}
+          data-state={editor.isActive('bulletList') ? 'on' : 'off'}
+        >
+          <List className="h-4 w-4" />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="orderedList"
+          aria-label="Toggle ordered list"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          disabled={!editor.can().chain().focus().toggleOrderedList().run()}
+          data-state={editor.isActive('orderedList') ? 'on' : 'off'}
+        >
+          <ListOrdered className="h-4 w-4" />
+        </ToggleGroupItem>
+        <Popover open={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
+          <PopoverTrigger asChild>
+            <ToggleGroupItem
+              value="link"
+              aria-label="Toggle link"
+              onClick={handleLinkButtonClick}
+              data-state={editor.isActive('link') ? 'on' : 'off'}
+            >
+              <Link className="h-4 w-4" />
+            </ToggleGroupItem>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="font-medium leading-none">Set Link</h4>
+                <p className="text-sm text-muted-foreground">
+                  Enter the URL for the link.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="link-url">URL</Label>
+                <Input
+                  id="link-url"
+                  type="url"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <Button onClick={setLink}>Apply Link</Button>
+              {editor.isActive('link') && (
+                <Button variant="outline" onClick={() => editor.chain().focus().unsetLink().run()}>
+                  <Unlink className="h-4 w-4 mr-2" /> Remove Link
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </ToggleGroup>
     </div>
   )
 }
 \`\`\`
 
-### `components/resume-blocks/ResumeEditor.tsx`
+## `components/resume-blocks/EditableText.tsx`
 
-Integrate the `FloatingToolbar` into the `ResumeEditor` component.
+This component will be a simple inline editable text field that switches between an input and a `p` tag based on an `isEditing` prop.
 
 \`\`\`tsx
-// components/resume-blocks/ResumeEditor.tsx
-"use client"
+'use client'
 
-import React, { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import * as React from 'react'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
+
+interface EditableTextProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  isEditing: boolean
+  className?: string
+}
+
+export function EditableText({ value, onChange, isEditing, className, ...props }: EditableTextProps) {
+  if (isEditing) {
+    return (
+      <Input
+        value={value}
+        onChange={onChange}
+        className={cn("w-full", className)}
+        {...props}
+      />
+    )
+  } else {
+    return (
+      <p className={cn("w-full py-2 px-3 text-sm", className)}>
+        {value}
+      </p>
+    )
+  }
+}
+\`\`\`
+
+## `app/resume/[id]/ResumeViewer.tsx`
+
+This file needs to be updated to:
+
+1.  Import `useEditor` and `EditorContent` from `@tiptap/react`.
+2.  Import `StarterKit` and `Link` from `@tiptap/starter-kit` and `@tiptap/extension-link` respectively.
+3.  Import `FloatingToolbar` from `components/resume-tools/FloatingToolbar`.
+4.  Initialize the Tiptap editor using `useEditor` and pass it to `EditorContent`.
+5.  Conditionally render `EditorContent` or a `div` with `dangerouslySetInnerHTML` for the "About Me" section based on `isEditing`.
+6.  Conditionally render `FloatingToolbar` when `isEditing` is true.
+7.  Update the `Textarea` for experience and education descriptions to remove `<ul><li>` tags for editing and re-add them for display.
+
+\`\`\`tsx
+'use client'
+
+import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { useRoom, useSelf } from "@veltdev/react"
+import { useEditor, EditorContent } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import Link from "@tiptap/extension-link"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { EditableText } from "./EditableText"
-import { CollapsibleSection } from "./CollapsibleSection"
-import { useToast } from "@/components/ui/use-toast"
-import { useRoom } from "@velt/react"
-import { Velt } from "velt"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, Plus, Minus, Download, Eye } from 'lucide-react'
+import { ProfileSnapshotCard } from "@/components/resume-blocks/ProfileSnapshotCard"
 import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
 import { PresenceAvatars } from "@/components/resume-tools/PresenceAvatars"
-import { SharePopover } from "@/components/resume-tools/SharePopover"
 import { ProfileVideoButton } from "@/components/resume-tools/ProfileVideoButton"
-import { supabase } from "@/lib/supabase" // Import supabase client
+import { SharePopover } from "@/components/resume-tools/SharePopover"
+import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
+import { EditableText } from "@/components/resume-blocks/EditableText"
+import { Skills } from "@/components/resume-blocks/Skills"
+import { useVeltClient, VeltRecorder, VeltAnalytics, VeltPresence, VeltComments, VeltProvider } from "@veltdev/react"
+import { Loader2 } from 'lucide-react'
+import { toast } from "sonner"
 
-interface ResumeEditorProps {
-  initialResumeData: any // Define a more specific type if possible
+interface ResumeViewerProps {
   resumeId: string
 }
 
-export function ResumeEditor({ initialResumeData, resumeId }: ResumeEditorProps) {
-  const [resumeData, setResumeData] = useState(initialResumeData)
-  const { toast } = useToast()
-  const { room } = useRoom()
+export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const pathname = usePathname()
+  const room = useRoom()
+  const self = useSelf()
+  const [resumeData, setResumeData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [selectedTheme, setSelectedTheme] = useState("modern")
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false)
 
-  // Initialize Velt for the entire document
-  useEffect(() => {
-    if (room) {
-      Velt.init({
-        documentId: resumeId,
-        // Other Velt configurations can go here
-      })
-    }
-  }, [room, resumeId])
+  const { client: veltClient } = useVeltClient()
 
-  // Sync local state with Velt's live state
-  useEffect(() => {
-    if (room) {
-      const unsubscribe = room.subscribe(
-        (liveState) => {
-          // Only update if the liveState is different from current local state
-          // This prevents infinite loops and unnecessary re-renders
-          if (JSON.stringify(liveState) !== JSON.stringify(resumeData)) {
-            setResumeData(liveState)
-          }
-        },
-        (error) => {
-          console.error("Error subscribing to Velt live state:", error)
-          toast({
-            title: "Collaboration Error",
-            description: "Failed to sync live changes. Please refresh.",
-            variant: "destructive",
-          })
-        }
-      )
-
-      // Set initial state in Velt if it's empty
-      if (Object.keys(room.getLiveState()).length === 0) {
-        room.updateLiveState(initialResumeData)
-      }
-
-      return () => unsubscribe()
-    }
-  }, [room, resumeData, initialResumeData, toast])
-
-  const handleUpdate = useCallback(
-    (path: string, content: string) => {
-      setResumeData((prevData: any) => {
-        const newData = { ...prevData }
-        const pathParts = path.split(".")
-        let current: any = newData
-
-        for (let i = 0; i < pathParts.length - 1; i++) {
-          const part = pathParts[i]
-          if (!current[part]) {
-            current[part] = {}
-          }
-          current = current[part]
-        }
-        current[pathParts[pathParts.length - 1]] = content
-
-        // Update Velt's live state
-        if (room) {
-          room.updateLiveState(newData)
-        }
-        return newData
-      })
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
+    ],
+    content: resumeData?.about?.description || "",
+    onUpdate: ({ editor }) => {
+      setResumeData((prev: any) => ({
+        ...prev,
+        about: { ...prev.about, description: editor.getHTML() },
+      }))
     },
-    [room]
-  )
+    editable: isEditing,
+  })
 
-  const handleSave = useCallback(async () => {
-    try {
-      const { error } = await supabase
-        .from("resumes")
-        .update({ content: resumeData })
-        .eq("id", resumeId)
-
-      if (error) {
-        throw error
+  useEffect(() => {
+    const fetchResume = async () => {
+      if (status === "authenticated") {
+        try {
+          setLoading(true)
+          setError(null)
+          const response = await fetch(`/api/resume/${resumeId}`)
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.message || "Failed to fetch resume.")
+          }
+          const data = await response.json()
+          setResumeData(data)
+        } catch (err: any) {
+          setError(err.message)
+          toast.error("Failed to load resume", {
+            description: err.message,
+          })
+        } finally {
+          setLoading(false)
+        }
+      } else if (status === "unauthenticated") {
+        router.push("/")
       }
+    }
 
-      toast({
-        title: "Resume Saved!",
-        description: "Your resume has been successfully saved.",
-      })
-    } catch (error: any) {
-      console.error("Error saving resume:", error)
-      toast({
-        title: "Save Error",
-        description: `Failed to save resume: ${error.message || "Unknown error"}`,
-        variant: "destructive",
+    fetchResume()
+  }, [resumeId, session, status, router])
+
+  useEffect(() => {
+    if (veltClient && resumeData) {
+      veltClient.setDocumentId(resumeId)
+      veltClient.setWhoIsOnline({
+        user: {
+          id: session?.user?.email || "anonymous",
+          name: session?.user?.name || "Anonymous",
+          photoUrl: session?.user?.image || "/placeholder-user.png",
+        },
       })
     }
-  }, [resumeData, resumeId, toast])
+  }, [veltClient, resumeId, session, resumeData])
 
-  if (!room) {
+  useEffect(() => {
+    if (room) {
+      room.subscribe("others", (others) => {
+        // Optional logging
+      })
+      room.subscribe("my-presence", (presence) => {
+        // Optional logging
+      })
+    }
+  }, [room])
+
+  const handleAddExperience = () => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      experience: [
+        ...prev.experience,
+        {
+          id: Date.now(),
+          title: "New Position",
+          company: "New Company",
+          years: "YYYY - YYYY",
+          description: "<ul><li>Description of new role.</li></ul>",
+        },
+      ],
+    }))
+  }
+
+  const handleRemoveExperience = (id: number) => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      experience: prev.experience.filter((exp: any) => exp.id !== id),
+    }))
+  }
+
+  const handleAddEducation = () => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      education: [
+        ...prev.education,
+        {
+          id: Date.now(),
+          degree: "New Degree",
+          university: "New University",
+          years: "YYYY - YYYY",
+          description: "<ul><li>Description of studies.</li></ul>",
+        },
+      ],
+    }))
+  }
+
+  const handleRemoveEducation = (id: number) => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      education: prev.education.filter((edu: any) => edu.id !== id),
+    }))
+  }
+
+  const handleAddSkill = () => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      skills: [...prev.skills, { id: Date.now(), name: "New Skill", level: 3 }],
+    }))
+  }
+
+  const handleRemoveSkill = (id: number) => {
+    setResumeData((prev: any) => ({
+      ...prev,
+      skills: prev.skills.filter((skill: any) => skill.id !== id),
+    }))
+  }
+
+  const handleSave = async () => {
+    setIsEditing(false)
+    try {
+      const response = await fetch(`/api/resume/${resumeId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(resumeData),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to save resume")
+      }
+      toast.success("Resume saved successfully!")
+    } catch (error) {
+      console.error("Error saving resume:", error)
+      toast.error("Failed to save resume.")
+    }
+  }
+
+  const handleDownload = () => {
+    toast.info("Download PDF functionality coming soon!")
+  }
+
+  const handleView = () => {
+    router.push(`/resume/${resumeId}/view`)
+  }
+
+  if (status === "loading" || loading) {
     return (
-      <div className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center gap-4 py-10">
-        <p className="text-lg text-gray-600">Loading collaboration room...</p>
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+        <div className="space-y-4 text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-gray-900 dark:text-gray-50" />
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">
+            Loading resume...
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">Please wait while we load the resume content.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+        <div className="space-y-4 text-center">
+          <h2 className="text-2xl font-bold text-red-600">Error Loading Resume</h2>
+          <p className="text-gray-700 dark:text-gray-300">{error}</p>
+          <Button onClick={() => router.push("/profile")}>Back to Profile</Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!resumeData) {
+    return (
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+        <div className="space-y-4 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Resume Not Found</h2>
+          <p className="text-gray-700 dark:text-gray-300">The resume with ID &quot;{resumeId}&quot; could not be found.</p>
+          <Button onClick={() => router.push("/profile")}>Back to Profile</Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full max-w-4xl space-y-6 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Your Resume</h1>
-        <div className="flex items-center gap-2">
-          <PresenceAvatars />
-          <SharePopover resumeId={resumeId} />
-          <ProfileVideoButton />
-          <Button onClick={handleSave}>Save Resume</Button>
-        </div>
+    <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!}>
+      <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="flex items-center justify-between p-4 border-b bg-white dark:bg-gray-900">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold">Resume Editor</h1>
+            <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="modern">Modern</SelectItem>
+                <SelectItem value="classic">Classic</SelectItem>
+                <SelectItem value="minimal">Minimal</SelectItem>
+                <SelectItem value="creative">Creative</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <PresenceAvatars />
+            <SharePopover isOpen={isSharePopoverOpen} onOpenChange={setIsSharePopoverOpen} resumeId={resumeId} />
+            <Button variant="outline" size="sm" onClick={handleView}>
+              <Eye className="w-4 h-4 mr-2" /> View
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Download className="w-4 h-4 mr-2" /> Download
+            </Button>
+            <ProfileVideoButton />
+            <Button onClick={() => {
+              if (isEditing) {
+                handleSave()
+              } else {
+                setIsEditing(true)
+              }
+            }} size="sm">
+              {isEditing ? "Save" : "Edit"}
+            </Button>
+          </div>
+        </header>
+        <main className="flex-1 overflow-hidden">
+          <ResizablePanelGroup direction="horizontal" className="h-full">
+            <ResizablePanel defaultSize={30} minSize={20} className="p-4 overflow-y-auto">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Name</Label>
+                      <EditableText
+                        id="name"
+                        value={resumeData.personal.name}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, name: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                        className="text-2xl font-bold"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <EditableText
+                        id="title"
+                        value={resumeData.personal.title}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, title: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <EditableText
+                        id="email"
+                        value={resumeData.personal.email}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, email: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <EditableText
+                        id="phone"
+                        value={resumeData.personal.phone}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, phone: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="linkedin">LinkedIn</Label>
+                      <EditableText
+                        id="linkedin"
+                        value={resumeData.personal.linkedin}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, linkedin: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="github">GitHub</Label>
+                      <EditableText
+                        id="github"
+                        value={resumeData.personal.github}
+                        onChange={(e) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            personal: { ...prev.personal, github: e.target.value },
+                          }))
+                        }
+                        isEditing={isEditing}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About Me</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isEditing ? (
+                      <EditorContent editor={editor} />
+                    ) : (
+                      <div
+                        className="prose dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: resumeData.about.description }}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Collapsible
+                  open={activeSection === "experience"}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "experience" ? null : "experience")
+                  }
+                  className="space-y-2"
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Experience</CardTitle>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronDown className="h-4 w-4" />
+                          <span className="sr-only">Toggle Experience</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </CardHeader>
+                    <CollapsibleContent className="space-y-4 p-4 pt-0">
+                      {resumeData.experience.map((exp: any, index: number) => (
+                        <div
+                          key={exp.id}
+                          className="border-b pb-4 last:border-b-0 last:pb-0"
+                        >
+                          <div>
+                            <Label htmlFor={`exp-title-${index}`}>Title</Label>
+                            <EditableText
+                              id={`exp-title-${index}`}
+                              value={exp.title}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  experience: prev.experience.map((item: any) =>
+                                    item.id === exp.id ? { ...item, title: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                              className="font-semibold"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`exp-company-${index}`}>Company</Label>
+                            <EditableText
+                              id={`exp-company-${index}`}
+                              value={exp.company}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  experience: prev.experience.map((item: any) =>
+                                    item.id === exp.id ? { ...item, company: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`exp-years-${index}`}>Years</Label>
+                            <EditableText
+                              id={`exp-years-${index}`}
+                              value={exp.years}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  experience: prev.experience.map((item: any) =>
+                                    item.id === exp.id ? { ...item, years: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`exp-description-${index}`}>Description</Label>
+                            {isEditing ? (
+                              <Textarea
+                                id={`exp-description-${index}`}
+                                value={exp.description.replace(/<\\?\/ul>|<\\?\/li>/g, "")}
+                                onChange={(e) =>
+                                  setResumeData((prev: any) => ({
+                                    ...prev,
+                                    experience: prev.experience.map((item: any) =>
+                                      item.id === exp.id
+                                        ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
+                                        : item
+                                    ),
+                                  }))
+                                }
+                                className="min-h-[80px]"
+                              />
+                            ) : (
+                              <div
+                                className="prose dark:prose-invert max-w-none text-sm"
+                                dangerouslySetInnerHTML={{ __html: exp.description }}
+                              />
+                            )}
+                          </div>
+                          {isEditing && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveExperience(exp.id)}
+                              className="mt-2"
+                            >
+                              <Minus className="w-4 h-4 mr-2" /> Remove
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddExperience}
+                          className="w-full mt-4 bg-transparent"
+                        >
+                          <Plus className="w-4 h-4 mr-2" /> Add Experience
+                        </Button>
+                      )}
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+
+                <Collapsible
+                  open={activeSection === "education"}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "education" ? null : "education")
+                  }
+                  className="space-y-2"
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Education</CardTitle>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronDown className="h-4 w-4" />
+                          <span className="sr-only">Toggle Education</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </CardHeader>
+                    <CollapsibleContent className="space-y-4 p-4 pt-0">
+                      {resumeData.education.map((edu: any, index: number) => (
+                        <div
+                          key={edu.id}
+                          className="border-b pb-4 last:border-b-0 last:pb-0"
+                        >
+                          <div>
+                            <Label htmlFor={`edu-degree-${index}`}>Degree</Label>
+                            <EditableText
+                              id={`edu-degree-${index}`}
+                              value={edu.degree}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  education: prev.education.map((item: any) =>
+                                    item.id === edu.id ? { ...item, degree: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                              className="font-semibold"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`edu-university-${index}`}>University</Label>
+                            <EditableText
+                              id={`edu-university-${index}`}
+                              value={edu.university}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  education: prev.education.map((item: any) =>
+                                    item.id === edu.id ? { ...item, university: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`edu-years-${index}`}>Years</Label>
+                            <EditableText
+                              id={`edu-years-${index}`}
+                              value={edu.years}
+                              onChange={(e) =>
+                                setResumeData((prev: any) => ({
+                                  ...prev,
+                                  education: prev.education.map((item: any) =>
+                                    item.id === edu.id ? { ...item, years: e.target.value } : item
+                                  ),
+                                }))
+                              }
+                              isEditing={isEditing}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`edu-description-${index}`}>Description</Label>
+                            {isEditing ? (
+                              <Textarea
+                                id={`edu-description-${index}`}
+                                value={edu.description.replace(/<\\?\/ul>|<\\?\/li>/g, "")}
+                                onChange={(e) =>
+                                  setResumeData((prev: any) => ({
+                                    ...prev,
+                                    education: prev.education.map((item: any) =>
+                                      item.id === edu.id
+                                        ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
+                                        : item
+                                    ),
+                                  }))
+                                }
+                                className="min-h-[80px]"
+                              />
+                            ) : (
+                              <div
+                                className="prose dark:prose-invert max-w-none text-sm"
+                                dangerouslySetInnerHTML={{ __html: edu.description }}
+                              />
+                            )}
+                          </div>
+                          {isEditing && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveEducation(edu.id)}
+                              className="mt-2"
+                            >
+                              <Minus className="w-4 h-4 mr-2" /> Remove
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddEducation}
+                          className="w-full mt-4 bg-transparent"
+                        >
+                          <Plus className="w-4 h-4 mr-2" /> Add Education
+                        </Button>
+                      )}
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+
+                <Collapsible
+                  open={activeSection === "skills"}
+                  onOpenChange={() =>
+                    setActiveSection(activeSection === "skills" ? null : "skills")
+                  }
+                  className="space-y-2"
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Skills</CardTitle>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronDown className="h-4 w-4" />
+                          <span className="sr-only">Toggle Skills</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </CardHeader>
+                    <CollapsibleContent className="space-y-4 p-4 pt-0">
+                      <Skills
+                        skills={resumeData.skills}
+                        isEditing={isEditing}
+                        onSkillChange={(id, newName, newLevel) =>
+                          setResumeData((prev: any) => ({
+                            ...prev,
+                            skills: prev.skills.map((skill: any) =>
+                              skill.id === id ? { ...skill, name: newName, level: newLevel } : skill
+                            ),
+                          }))
+                        }
+                        onRemoveSkill={handleRemoveSkill}
+                      />
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddSkill}
+                          className="w-full mt-4 bg-transparent"
+                        >
+                          <Plus className="w-4 h-4 mr-2" /> Add Skill
+                        </Button>
+                      )}
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+
+                <ProfileSnapshotCard />
+              </div>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={70} className="relative p-4 overflow-y-auto">
+              <ResumeDisplay resumeData={resumeData} theme={selectedTheme} />
+              {isEditing && editor && <FloatingToolbar editor={editor} />}
+              <VeltComments />
+              <VeltRecorder />
+              <VeltPresence />
+              <VeltAnalytics />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </main>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium">
-              Name
-            </label>
-            <Input
-              id="name"
-              value={resumeData.personal?.name || ""}
-              onChange={(e) => handleUpdate("personal.name", e.target.value)}
-              placeholder="Your Full Name"
-            />
-          </div>
-          <div>
-            <label htmlFor="title" className="mb-1 block text-sm font-medium">
-              Title
-            </label>
-            <Input
-              id="title"
-              value={resumeData.personal?.title || ""}
-              onChange={(e) => handleUpdate("personal.title", e.target.value)}
-              placeholder="e.g., Software Engineer"
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={resumeData.personal?.email || ""}
-              onChange={(e) => handleUpdate("personal.email", e.target.value)}
-              placeholder="your.email@example.com"
-            />
-          </div>
-          <div>
-            <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-              Phone
-            </label>
-            <Input
-              id="phone"
-              type="tel"
-              value={resumeData.personal?.phone || ""}
-              onChange={(e) => handleUpdate("personal.phone", e.target.value)}
-              placeholder="(123) 456-7890"
-            />
-          </div>
-          <div>
-            <label htmlFor="linkedin" className="mb-1 block text-sm font-medium">
-              LinkedIn Profile URL
-            </label>
-            <Input
-              id="linkedin"
-              value={resumeData.personal?.linkedin || ""}
-              onChange={(e) => handleUpdate("personal.linkedin", e.target.value)}
-              placeholder="https://linkedin.com/in/yourprofile"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <CollapsibleSection title="Summary">
-        <EditableText
-          editorId="summary-editor"
-          initialContent={resumeData.summary || ""}
-          onUpdate={(content) => handleUpdate("summary", content)}
-          placeholder="Write a brief summary of your professional experience and goals."
-          className="prose prose-sm w-full max-w-none rounded-md border p-3 focus-within:ring-2 focus-within:ring-blue-500"
-        />
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Experience">
-        {resumeData.experience?.map((exp: any, index: number) => (
-          <Card key={index} className="mb-4">
-            <CardContent className="space-y-3 p-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Title</label>
-                <Input
-                  value={exp.title || ""}
-                  onChange={(e) =>
-                    handleUpdate(`experience.${index}.title`, e.target.value)
-                  }
-                  placeholder="Job Title"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Company</label>
-                <Input
-                  value={exp.company || ""}
-                  onChange={(e) =>
-                    handleUpdate(`experience.${index}.company`, e.target.value)
-                  }
-                  placeholder="Company Name"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Location</label>
-                <Input
-                  value={exp.location || ""}
-                  onChange={(e) =>
-                    handleUpdate(`experience.${index}.location`, e.target.value)
-                  }
-                  placeholder="City, State"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Start Date</label>
-                  <Input
-                    type="text"
-                    value={exp.startDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`experience.${index}.startDate`, e.target.value)
-                    }
-                    placeholder="e.g., Jan 2020"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">End Date</label>
-                  <Input
-                    type="text"
-                    value={exp.endDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`experience.${index}.endDate`, e.target.value)
-                    }
-                    placeholder="e.g., Dec 2022 or Present"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Description</label>
-                <EditableText
-                  editorId={`experience-${index}-description-editor`}
-                  initialContent={exp.description || ""}
-                  onUpdate={(content) =>
-                    handleUpdate(`experience.${index}.description`, content)
-                  }
-                  placeholder="Describe your responsibilities and achievements."
-                  className="prose prose-sm w-full max-w-none rounded-md border p-3 focus-within:ring-2 focus-within:ring-blue-500"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() =>
-            setResumeData((prev: any) => ({
-              ...prev,
-              experience: [
-                ...(prev.experience || []),
-                {
-                  title: "",
-                  company: "",
-                  location: "",
-                  startDate: "",
-                  endDate: "",
-                  description: "",
-                },
-              ],
-            }))
-          }
-        >
-          Add Experience
-        </Button>
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Education">
-        {resumeData.education?.map((edu: any, index: number) => (
-          <Card key={index} className="mb-4">
-            <CardContent className="space-y-3 p-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Degree</label>
-                <Input
-                  value={edu.degree || ""}
-                  onChange={(e) =>
-                    handleUpdate(`education.${index}.degree`, e.target.value)
-                  }
-                  placeholder="e.g., Bachelor of Science"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">University</label>
-                <Input
-                  value={edu.university || ""}
-                  onChange={(e) =>
-                    handleUpdate(`education.${index}.university`, e.target.value)
-                  }
-                  placeholder="University Name"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Location</label>
-                <Input
-                  value={edu.location || ""}
-                  onChange={(e) =>
-                    handleUpdate(`education.${index}.location`, e.target.value)
-                  }
-                  placeholder="City, State"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Start Date</label>
-                  <Input
-                    type="text"
-                    value={edu.startDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`education.${index}.startDate`, e.target.value)
-                    }
-                    placeholder="e.g., Sep 2016"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">End Date</label>
-                  <Input
-                    type="text"
-                    value={edu.endDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`education.${index}.endDate`, e.target.value)
-                    }
-                    placeholder="e.g., May 2020"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Description</label>
-                <EditableText
-                  editorId={`education-${index}-description-editor`}
-                  initialContent={edu.description || ""}
-                  onUpdate={(content) =>
-                    handleUpdate(`education.${index}.description`, content)
-                  }
-                  placeholder="List relevant coursework, honors, or activities."
-                  className="prose prose-sm w-full max-w-none rounded-md border p-3 focus-within:ring-2 focus-within:ring-blue-500"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() =>
-            setResumeData((prev: any) => ({
-              ...prev,
-              education: [
-                ...(prev.education || []),
-                {
-                  degree: "",
-                  university: "",
-                  location: "",
-                  startDate: "",
-                  endDate: "",
-                  description: "",
-                },
-              ],
-            }))
-          }
-        >
-          Add Education
-        </Button>
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Skills">
-        <div>
-          <label htmlFor="skills" className="mb-1 block text-sm font-medium">
-            Skills (comma-separated)
-          </label>
-          <Textarea
-            id="skills"
-            value={resumeData.skills?.join(", ") || ""}
-            onChange={(e) =>
-              handleUpdate(
-                "skills",
-                e.target.value.split(",").map((s) => s.trim())
-              )
-            }
-            placeholder="e.g., JavaScript, React, Node.js, SQL"
-          />
-        </div>
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Projects">
-        {resumeData.projects?.map((project: any, index: number) => (
-          <Card key={index} className="mb-4">
-            <CardContent className="space-y-3 p-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Project Title</label>
-                <Input
-                  value={project.title || ""}
-                  onChange={(e) =>
-                    handleUpdate(`projects.${index}.title`, e.target.value)
-                  }
-                  placeholder="Project Name"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Start Date</label>
-                  <Input
-                    type="text"
-                    value={project.startDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`projects.${index}.startDate`, e.target.value)
-                    }
-                    placeholder="e.g., Mar 2021"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">End Date</label>
-                  <Input
-                    type="text"
-                    value={project.endDate || ""}
-                    onChange={(e) =>
-                      handleUpdate(`projects.${index}.endDate`, e.target.value)
-                    }
-                    placeholder="e.g., Jun 2021 or Present"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Description</label>
-                <EditableText
-                  editorId={`project-${index}-description-editor`}
-                  initialContent={project.description || ""}
-                  onUpdate={(content) =>
-                    handleUpdate(`projects.${index}.description`, content)
-                  }
-                  placeholder="Describe your project and your role."
-                  className="prose prose-sm w-full max-w-none rounded-md border p-3 focus-within:ring-2 focus-within:ring-blue-500"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() =>
-            setResumeData((prev: any) => ({
-              ...prev,
-              projects: [
-                ...(prev.projects || []),
-                { title: "", startDate: "", endDate: "", description: "" },
-              ],
-            }))
-          }
-        >
-          Add Project
-        </Button>
-      </CollapsibleSection>
-
-      <CollapsibleSection title="Awards">
-        {resumeData.awards?.map((award: any, index: number) => (
-          <Card key={index} className="mb-4">
-            <CardContent className="space-y-3 p-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Award Title</label>
-                <Input
-                  value={award.title || ""}
-                  onChange={(e) =>
-                    handleUpdate(`awards.${index}.title`, e.target.value)
-                  }
-                  placeholder="Award Name"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Issuer</label>
-                <Input
-                  value={award.issuer || ""}
-                  onChange={(e) =>
-                    handleUpdate(`awards.${index}.issuer`, e.target.value)
-                  }
-                  placeholder="Issuing Organization"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Date</label>
-                <Input
-                  type="text"
-                  value={award.date || ""}
-                  onChange={(e) =>
-                    handleUpdate(`awards.${index}.date`, e.target.value)
-                  }
-                  placeholder="e.g., Jan 2023"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Description</label>
-                <EditableText
-                  editorId={`award-${index}-description-editor`}
-                  initialContent={award.description || ""}
-                  onUpdate={(content) =>
-                    handleUpdate(`awards.${index}.description`, content)
-                  }
-                  placeholder="Describe the award and its significance."
-                  className="prose prose-sm w-full max-w-none rounded-md border p-3 focus-within:ring-2 focus-within:ring-blue-500"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        <Button
-          variant="outline"
-          onClick={() =>
-            setResumeData((prev: any) => ({
-              ...prev,
-              awards: [
-                ...(prev.awards || []),
-                { title: "", issuer: "", date: "", description: "" },
-              ],
-            }))
-          }
-        >
-          Add Award
-        </Button>
-      </CollapsibleSection>
-
-      <FloatingToolbar />
-    </div>
+    </VeltProvider>
   )
 }
-\`\`\`

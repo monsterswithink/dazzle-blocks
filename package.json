@@ -1,6 +1,6 @@
 {
   "name": "dazzle-20",
-  "description": "main"
+  "description": "main",
   "license": "Apache-2.0",
   "private": true,
   "scripts": {

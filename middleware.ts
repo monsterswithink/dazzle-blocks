@@ -3,28 +3,23 @@ import { NextResponse } from "next/server"
 
 export default auth((req) => {
   const { nextUrl } = req
-  const isLoggedIn = !!req.auth
+  const isAuthenticated = !!req.auth
 
-  const isAuthPage = nextUrl.pathname.startsWith("/auth")
-  const isProtectedRoute =
-    nextUrl.pathname.startsWith("/editor") ||
-    nextUrl.pathname.startsWith("/profile") ||
-    nextUrl.pathname.startsWith("/resume")
+  const isPublicRoute = nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/auth")
 
-  if (isAuthPage) {
-    if (isLoggedIn) {
-      return NextResponse.redirect(new URL("/editor", nextUrl))
+  if (!isAuthenticated && !isPublicRoute) {
+    let from = nextUrl.pathname
+    if (nextUrl.search) {
+      from += nextUrl.search
     }
-    return NextResponse.next()
-  }
-
-  if (isProtectedRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/auth/signin", nextUrl))
+    const url = new URL(`/auth/signin`, nextUrl.origin)
+    url.searchParams.set("from", from)
+    return NextResponse.redirect(url)
   }
 
   return NextResponse.next()
 })
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|public).*)"],
 }

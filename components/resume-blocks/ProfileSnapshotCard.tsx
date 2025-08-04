@@ -1,127 +1,102 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
-import {
-  ResponsiveContainer,
-  LineChart,
-  BarChart,
-  PieChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-  Tooltip,
-  Line,
-  Bar,
-  Pie,
-  Cell,
-} from "recharts"
-import {
-  useVeltClient,
-  useUniqueViewsByDate,
-  useUniqueViewsByUser,
-  VeltViewAnalytics,
-  useSetDocumentId,
-  useIdentify,
-} from "@veltdev/react"
 
-interface AnalyticsByDate {
-  date: string
-  count: number
-}
-interface AnalyticsByUser {
-  profileUrl?: string
-  name?: string
-  count: number
-}
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import type { Profile } from "@/types/profile"
 
 export function ProfileSnapshotCard() {
-  const { client } = useVeltClient()
-  const viewsByDate = useUniqueViewsByDate()
-  const viewsByUser = useUniqueViewsByUser()
-  const [chartReady, setChartReady] = useState(false)
+  const [linkedinUrl, setLinkedinUrl] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [enrichedProfile, setEnrichedProfile] = useState<Profile | null>(null)
 
-  useEffect(() => {
-    if (client) setChartReady(true)
-  }, [client])
+  const handleEnrichProfile = async () => {
+    if (!linkedinUrl) {
+      toast.error("Please enter a LinkedIn profile URL.")
+      return
+    }
 
-  const dates: AnalyticsByDate[] =
-    chartReady && viewsByDate
-      ? viewsByDate.map((v) => ({
-          date: v.date, // YYYY-MM-DD or humanized
-          count: v.count,
-        }))
-      : []
+    setLoading(true)
+    setEnrichedProfile(null)
+    try {
+      const response = await fetch("/api/enrich", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ linkedinUrl }),
+      })
 
-  const users: AnalyticsByUser[] =
-    chartReady && viewsByUser
-      ? viewsByUser.map((v) => ({
-          name: v.name ?? v.userId,
-          count: v.count,
-          profileUrl: v.photoUrl || undefined,
-        }))
-      : []
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to enrich profile.")
+      }
+
+      const data = await response.json()
+      setEnrichedProfile(data.profile)
+      toast.success("Profile enriched successfully!")
+    } catch (error: any) {
+      console.error("Error enriching profile:", error)
+      toast.error("Failed to enrich profile.", {
+        description: error.message || "An unknown error occurred.",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="w-full max-w-2xl p-4 bg-white rounded-lg shadow">
-      <h2 className="mb-4 text-xl font-semibold flex items-center gap-2">
-        Resume Analytics Snapshot
-        <VeltViewAnalytics />
-      </h2>
+    <Card>
+      <CardHeader>
+        <CardTitle>Enrich Profile from LinkedIn</CardTitle>
+        <CardDescription>
+          Enter a LinkedIn profile URL to automatically extract and populate resume data.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
+          <Input
+            id="linkedin-url"
+            placeholder="https://www.linkedin.com/in/johndoe"
+            value={linkedinUrl}
+            onChange={(e) => setLinkedinUrl(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+        <Button onClick={handleEnrichProfile} disabled={loading} className="w-full">
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enriching...
+            </>
+          ) : (
+            "Enrich Profile"
+          )}
+        </Button>
 
-      <h3 className="mt-2 font-semibold">👁️ Views Over Time</h3>
-      <div className="h-40 w-full">
-        <ResponsiveContainer>
-          <LineChart data={dates}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="count" stroke="#3b82f6" name="Unique Views" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <h3 className="mt-6 font-semibold">👥 Unique Viewers</h3>
-      <div className="grid grid-cols-2 gap-2 my-2">
-        {users.slice(0, 4).map((u) => (
-          <div key={u.name} className="flex items-center gap-2">
-            <img src={u.profileUrl || "/avatar-placeholder.png"} alt="" className="w-8 h-8 rounded-full" />
-            <span>{u.name} ({u.count})</span>
+        {enrichedProfile && (
+          <div className="mt-6 space-y-4">
+            <h3 className="text-lg font-semibold">Enriched Data Preview:</h3>
+            <p>
+              <strong>Name:</strong> {enrichedProfile.name}
+            </p>
+            <p>
+              <strong>Headline:</strong> {enrichedProfile.headline}
+            </p>
+            <p>
+              <strong>Email:</strong> {enrichedProfile.email}
+            </p>
+            {/* You can display more fields here */}
+            <Button variant="outline" className="w-full bg-transparent">
+              Apply to Resume (Coming Soon)
+            </Button>
           </div>
-        ))}
-      </div>
-
-      <h3 className="mt-6 font-semibold">Traffic Sources (guess via clicks)</h3>
-      <div className="mt-2 flex justify-center h-36">
-        <ResponsiveContainer>
-          <PieChart>
-            <Pie
-              data={[{ name: "LinkedIn", value: 150 }, { name: "GitHub", value: 100 }, { name: "Direct", value: 70 }, { name: "Other", value: 30 }]}
-              dataKey="value"
-              nameKey="name"
-              labelLine={false}
-              outerRadius={80}
-              fill="#8884d8"
-            >
-              {[{ color: "#0077B5" }, { color: "#6e5494" }, { color: "#4CAF50" }, { color: "#FFC107" }].map((entry, i) => (
-                <Cell key={i} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      <button
-        onClick={() => {
-          client.getViewsElement()?.resetData?.()
-        }}
-        className="mt-4 py-1 px-3 bg-blue-100 text-blue-700 rounded"
-      >
-        Clear My Views
-      </button>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

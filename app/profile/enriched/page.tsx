@@ -1,148 +1,125 @@
 "use client"
 
-import { CardDescription } from "@/components/ui/card"
-
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import type { Profile } from "@/types/profile"
 
-interface EnrichedProfileData {
-  full_name?: string
-  headline?: string
-  summary?: string
-  experience?: any[]
-  education?: any[]
-  skills?: string[]
-  profile_url?: string
-}
-
-async function fetchEnrichedProfile(vanityUrl: string): Promise<EnrichedProfileData | null> {
+async function fetchEnrichedProfile(linkedinUrl: string): Promise<Profile | null> {
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/enrich?vanityUrl=${encodeURIComponent(vanityUrl)}`, {
-      method: "GET",
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/enrich`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      cache: "no-store",
+      body: JSON.stringify({ linkedinUrl }),
+      cache: "no-store", // Ensure fresh data
     })
 
     if (!response.ok) {
       const errorData = await response.json()
-      console.error("Failed to fetch enriched profile:", errorData)
-      return null
+      throw new Error(errorData.message || "Failed to fetch enriched profile.")
     }
 
-    const data: EnrichedProfileData = await response.json()
-    return data
+    const data = await response.json()
+    return data.profile
   } catch (error) {
     console.error("Error fetching enriched profile:", error)
     return null
   }
 }
 
-export default async function EnrichedProfilePage() {
+export default async function EnrichedProfilePage({ searchParams }: { searchParams: { linkedinUrl?: string } }) {
   const session = await auth()
-  const router = useRouter()
 
-  if (!session || !session.user || !(session.user as any).vanityUrl) {
-    redirect("/api/auth/signin")
+  if (!session) {
+    redirect("/auth/signin")
   }
 
-  const vanityUrl = (session.user as any).vanityUrl
-  const enrichedData = await fetchEnrichedProfile(vanityUrl)
+  const linkedinUrl = searchParams.linkedinUrl || ""
+  const enrichedProfile = linkedinUrl ? await fetchEnrichedProfile(linkedinUrl) : null
 
   return (
-    <main className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
-      {enrichedData ? (
-        <Card className="w-full max-w-2xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Enriched LinkedIn Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Enriched Profile Data</CardTitle>
+          <CardDescription>This data was extracted from the provided LinkedIn URL.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {enrichedProfile ? (
+            <div className="space-y-2">
               <p>
-                <span className="font-semibold">Name:</span> {enrichedData.full_name || session.user.name}
+                <strong>Name:</strong> {enrichedProfile.name}
               </p>
-              {enrichedData.headline && (
+              <p>
+                <strong>Headline:</strong> {enrichedProfile.headline}
+              </p>
+              <p>
+                <strong>Email:</strong> {enrichedProfile.email}
+              </p>
+              {enrichedProfile.summary && (
                 <p>
-                  <span className="font-semibold">Headline:</span> {enrichedData.headline}
+                  <strong>Summary:</strong> {enrichedProfile.summary}
                 </p>
               )}
-              {enrichedData.summary && (
+
+              {enrichedProfile.experience && enrichedProfile.experience.length > 0 && (
                 <div>
-                  <h3 className="font-semibold">Summary:</h3>
-                  <p>{enrichedData.summary}</p>
+                  <h3 className="text-lg font-semibold mt-4">Experience:</h3>
+                  {enrichedProfile.experience.map((exp, index) => (
+                    <div key={index} className="ml-4 border-l pl-4 mt-2">
+                      <p>
+                        <strong>{exp.title}</strong> at {exp.company}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{exp.years}</p>
+                      <p className="text-sm">{exp.description}</p>
+                    </div>
+                  ))}
                 </div>
               )}
-              {enrichedData.experience && enrichedData.experience.length > 0 && (
+
+              {enrichedProfile.education && enrichedProfile.education.length > 0 && (
                 <div>
-                  <h3 className="font-semibold">Experience:</h3>
-                  <ul className="list-disc pl-5">
-                    {enrichedData.experience.map((exp: any, index: number) => (
-                      <li key={index}>
-                        {exp.title} at {exp.company} ({exp.start_date} - {exp.end_date || "Present"})
-                      </li>
+                  <h3 className="text-lg font-semibold mt-4">Education:</h3>
+                  {enrichedProfile.education.map((edu, index) => (
+                    <div key={index} className="ml-4 border-l pl-4 mt-2">
+                      <p>
+                        <strong>{edu.degree}</strong> from {edu.university}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{edu.years}</p>
+                      <p className="text-sm">{edu.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {enrichedProfile.skills && enrichedProfile.skills.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mt-4">Skills:</h3>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {enrichedProfile.skills.map((skill, index) => (
+                      <span key={index} className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm">
+                        {skill.name} ({skill.level})
+                      </span>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
-              {enrichedData.education && enrichedData.education.length > 0 && (
-                <div>
-                  <h3 className="font-semibold">Education:</h3>
-                  <ul className="list-disc pl-5">
-                    {enrichedData.education.map((edu: any, index: number) => (
-                      <li key={index}>
-                        {edu.degree} from {edu.university} ({edu.start_date} - {edu.end_date || "Present"})
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {enrichedData.skills && enrichedData.skills.length > 0 && (
-                <div>
-                  <h3 className="font-semibold">Skills:</h3>
-                  <p>{enrichedData.skills.join(", ")}</p>
-                </div>
-              )}
-              {enrichedData.profile_url && (
-                <p>
-                  <span className="font-semibold">Profile URL:</span>{" "}
-                  <a
-                    href={enrichedData.profile_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    {enrichedData.profile_url}
-                  </a>
-                </p>
-              )}
+
+              <Button className="mt-6 w-full">Apply to Resume (Coming Soon)</Button>
             </div>
-            <div className="mt-6 flex justify-center">
-              <Button asChild>
-                <Link href="/profile">Back to Profile</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
-          <Card className="w-full max-w-md">
-            <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-3xl font-bold">No Data</CardTitle>
-              <CardDescription>No enriched profile data found.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <Button className="w-full" onClick={() => router.push("/profile")}>
-                Go Back to Profile
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </main>
+          ) : (
+            <p className="text-center text-gray-700 dark:text-gray-300">
+              No enriched profile data found or an error occurred.
+            </p>
+          )}
+          <Button onClick={() => redirect("/editor")} variant="outline" className="w-full mt-4">
+            Back to Editor
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

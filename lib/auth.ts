@@ -1,40 +1,48 @@
-import NextAuth from "next-auth"
-import LinkedIn from "next-auth/providers/linkedin"
+import type { AuthConfig } from "@auth/core"
+import LinkedIn from "@auth/core/providers/linkedin"
+import { SupabaseAdapter } from "@auth/supabase-adapter"
+import { createClient } from "@supabase/supabase-js"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authConfig = {
   providers: [
     LinkedIn({
-      clientId: process.env.LINKEDIN_CLIENT_ID!,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "openid profile email",
-        },
+      clientId: process.env.LINKEDIN_CLIENT_ID,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        }
       },
     }),
   ],
+  adapter: SupabaseAdapter({
+    url: process.env.SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseClient: createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!),
+  }),
   callbacks: {
-    async jwt({ token, account, profile }) {
-      if (account && profile) {
-        token.id = profile.sub
-        token.name = profile.name
-        token.email = profile.email
-        token.picture = profile.picture
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.name = token.name
-        session.user.email = token.email
-        session.user.image = token.picture as string
+    async session({ session, user }) {
+      if (session?.user) {
+        session.user.id = user.id
       }
       return session
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
     },
   },
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-})
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+} satisfies AuthConfig

@@ -1,18 +1,10 @@
 {
   "name": "Classic",
+  "fontFamily": "serif",
   "colors": {
-    "primary": "#333333",
-    "secondary": "#f0f0f0",
-    "text": "#000000",
-    "background": "#ffffff",
-    "accent": "#007bff"
-  },
-  "fonts": {
-    "heading": "serif",
-    "body": "serif"
-  },
-  "layout": {
-    "spacing": "normal",
-    "sections": ["personal", "summary", "experience", "education", "skills", "projects", "awards"]
+    "primary": "#4A148C",
+    "secondary": "#6A1B9A",
+    "text": "#333333",
+    "background": "#F5F5F5"
   }
 }

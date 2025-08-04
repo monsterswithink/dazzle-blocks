@@ -2,31 +2,33 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useRoom } from "@veltdev/react"
+import { useOthers } from "@veltdev/react" // Corrected import from @veltdev/react
 
 export function PresenceAvatars() {
-  const { room } = useRoom()
-  const users = room?.getUsers() || []
-
-  if (users.length === 0) return null
+  const others = useOthers()
 
   return (
-    <div className="flex -space-x-2 overflow-hidden">
-      <TooltipProvider>
-        {users.map((user) => (
-          <Tooltip key={user.id}>
+    <TooltipProvider>
+      <div className="flex -space-x-2 overflow-hidden">
+        {others.toArray().map((other) => (
+          <Tooltip key={other.id}>
             <TooltipTrigger asChild>
-              <Avatar className="h-8 w-8 cursor-pointer border-2 border-white transition-transform hover:scale-110">
-                <AvatarImage src={user.avatar || "/placeholder.png"} alt={user.name || "User avatar"} />
-                <AvatarFallback>{user.name?.charAt(0) ?? "?"}</AvatarFallback>
+              <Avatar className="h-8 w-8 border-2 border-white dark:border-gray-900">
+                <AvatarImage src={other.info.photoUrl || "/placeholder-user.png"} alt={other.info.name} />
+                <AvatarFallback>{other.info.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{user.name || "Unknown User"}</p>
+              <p>{other.info.name}</p>
             </TooltipContent>
           </Tooltip>
         ))}
-      </TooltipProvider>
-    </div>
+        {others.count > 0 && (
+          <Avatar className="h-8 w-8 border-2 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center text-xs font-medium">
+            <AvatarFallback>+{others.count}</AvatarFallback>
+          </Avatar>
+        )}
+      </div>
+    </TooltipProvider>
   )
 }

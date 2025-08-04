@@ -1,47 +1,58 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
 
-export async function GET(request: Request) {
-  const session = await auth()
+export async function POST(req: Request) {
+  const { linkedinUrl } = await req.json()
+  const apiKey = process.env.ENRICHLAYER_API_KEY
 
-  if (!session || !session.user || !(session.user as any).vanityUrl) {
-    return NextResponse.json({ error: "Unauthorized or missing vanityUrl" }, { status: 401 })
+  if (!apiKey) {
+    return NextResponse.json({ message: "EnrichLayer API key not configured." }, { status: 500 })
   }
 
-  const { searchParams } = new URL(request.url)
-  const vanityUrl = searchParams.get("vanityUrl") || (session.user as any).vanityUrl
-
-  if (!vanityUrl) {
-    return NextResponse.json({ error: "vanityUrl is required" }, { status: 400 })
-  }
-
-  const enrichLayerApiKey = process.env.ENRICHLAYER_API_KEY
-
-  if (!enrichLayerApiKey) {
-    console.error("ENRICHLAYER_API_KEY is not set.")
-    return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+  if (!linkedinUrl) {
+    return NextResponse.json({ message: "LinkedIn URL is required." }, { status: 400 })
   }
 
   try {
     // This is a placeholder for the actual EnrichLayer API call.
-    // Replace with your actual EnrichLayer integration logic.
-    const enrichResponse = await fetch(
-      `https://api.enrichlayer.com/v1/profile?api_key=${enrichLayerApiKey}&url=${encodeURIComponent(vanityUrl)}`,
-    )
+    // You would typically make a request to the EnrichLayer API here.
+    // For demonstration, we'll return mock data.
+    console.log(`Attempting to enrich profile for: ${linkedinUrl}`)
 
-    if (!enrichResponse.ok) {
-      const errorData = await enrichResponse.json()
-      console.error("EnrichLayer API error:", errorData)
-      return NextResponse.json(
-        { error: "Failed to fetch enriched data", details: errorData },
-        { status: enrichResponse.status },
-      )
+    // Simulate API call delay
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    const mockProfileData = {
+      name: "Jane Doe",
+      headline: "Experienced Software Developer | Full Stack Enthusiast",
+      email: "jane.doe@example.com",
+      image: "/placeholder-user.png",
+      summary: "A highly skilled software developer with a passion for building robust and scalable applications.",
+      experience: [
+        {
+          title: "Lead Developer",
+          company: "Innovate Solutions",
+          years: "2020 - Present",
+          description: "Led development of key projects.",
+        },
+      ],
+      education: [
+        {
+          degree: "B.Sc. Computer Science",
+          university: "Tech University",
+          years: "2016 - 2020",
+          description: "Graduated with honors.",
+        },
+      ],
+      skills: [
+        { name: "React", level: 5 },
+        { name: "Node.js", level: 4 },
+        { name: "AWS", level: 3 },
+      ],
     }
 
-    const data = await enrichResponse.json()
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error("Error fetching enriched data:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ profile: mockProfileData })
+  } catch (error: any) {
+    console.error("Error enriching profile:", error)
+    return NextResponse.json({ message: error.message || "Internal server error during enrichment." }, { status: 500 })
   }
 }

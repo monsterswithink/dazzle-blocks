@@ -8,19 +8,21 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Resume Editor",
-  description: "Collaborative resume editor with real-time editing",
+  description: "A collaborative resume editor powered by Next.js and Velt",
     generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+        </Providers>
       </body>
     </html>
   )

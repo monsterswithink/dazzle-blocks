@@ -17,18 +17,13 @@ export type DateFormat = "MMM YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD" | "relative"
 // Core experience types
 // ----------------------
 export interface Experience {
-  starts_at: DateObject | null
-  ends_at: DateObject | null
-  company: string | null | ""
-  company_linkedin_profile_url: string | null | ""
-  company_facebook_profile_url: string | null | ""
-  title: string | null | ""
-  description: string | null | ""
-  location: string | null | ""
-  logo_url: string | null | ""
+  title: string
+  company: string
+  years: string
+  description: string
 }
 
-export interface ProcessedExperience extends Omit<Experience, "starts_at" | "ends_at"> {
+export interface ProcessedExperience extends Omit<Experience, "years"> {
   starts_at: FormattedDate | null
   ends_at: FormattedDate | null
   duration: string
@@ -80,15 +75,10 @@ export interface MetaInfo {
 // Structured sections
 // ----------------------
 export interface Education {
-  school: string | null | ""
-  degree: string | null | ""
-  field_of_study: string | null | ""
-  starts_at: DateObject | null
-  ends_at: DateObject | null
-  grade: string | null | ""
-  description: string | null | ""
-  logo_url: string | null | ""
-  location: string | null | ""
+  degree: string
+  university: string
+  years: string
+  description: string
 }
 
 export interface Language {
@@ -165,6 +155,11 @@ export interface Certification {
   ends_at: DateObject | null
 }
 
+export interface Skill {
+  name: string
+  level: number // e.g., 1-5
+}
+
 // ----------------------
 // Root profile object
 // ----------------------
@@ -203,7 +198,7 @@ export interface EnrichedProfile {
   similarly_named_profiles: SimilarProfile[]
   articles: Article[]
   groups: string[]
-  skills: string[]
+  skills: Skill[]
   inferred_salary: InferredSalary
   gender: string | null | ""
   birth_date: string | null | ""
@@ -217,7 +212,7 @@ export interface EnrichedProfile {
   enrichedProfile: {
     headline: string
     summary: string
-    skills: string[]
+    skills: Skill[]
     experience: { title: string; company: string; years: string }[]
   }
 }
@@ -225,8 +220,10 @@ export interface EnrichedProfile {
 // ----------------------
 // Processed version
 // ----------------------
-export interface ProcessedProfile extends Omit<EnrichedProfile, "experiences"> {
+export interface ProcessedProfile extends Omit<EnrichedProfile, "experiences" | "education" | "skills"> {
   experiences: ProcessedExperience[]
+  education: Education[]
+  skills: Skill[]
   location: string
   profileStats: {
     totalExperience: string
@@ -273,7 +270,22 @@ export interface EnrichLayerProfile {
     end_date: string
     description: string
   }>
-  skills: string[]
+  skills: Skill[]
   profile_url: string
   // ... other fields from EnrichLayer
+}
+
+// ----------------------
+// Profile Interface
+// ----------------------
+export interface Profile {
+  id: string
+  name: string
+  email: string
+  image?: string
+  headline?: string
+  summary?: string
+  experience?: Experience[]
+  education?: Education[]
+  skills?: Skill[]
 }

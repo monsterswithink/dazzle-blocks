@@ -1,18 +1,10 @@
 {
   "name": "Minimal",
+  "fontFamily": "monospace",
   "colors": {
-    "primary": "#1a1a1a",
-    "secondary": "#e0e0e0",
-    "text": "#333333",
-    "background": "#ffffff",
-    "accent": "#666666"
-  },
-  "fonts": {
-    "heading": "sans-serif",
-    "body": "sans-serif"
-  },
-  "layout": {
-    "spacing": "compact",
-    "sections": ["personal", "summary", "experience", "education", "skills"]
+    "primary": "#212121",
+    "secondary": "#757575",
+    "text": "#212121",
+    "background": "#FFFFFF"
   }
 }

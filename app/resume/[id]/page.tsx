@@ -1,70 +1,35 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { supabase } from "@/lib/supabase"
-import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
-import { VeltProvider } from "@/components/resume-providers/Velt"
 import { notFound } from "next/navigation"
+import { getResumeById } from "@/lib/resume-service"
+import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-interface ResumePageProps {
+interface ResumeViewPageProps {
   params: {
     id: string
   }
 }
 
-export default async function ResumePage({ params }: ResumePageProps) {
+export default async function ResumeViewPage({ params }: ResumeViewPageProps) {
   const session = await auth()
 
   if (!session) {
-    redirect("/api/auth/signin")
-  }
-
-  const userId = session.user?.id
-  if (!userId) {
-    redirect("/api/auth/signin")
+    redirect("/auth/signin")
   }
 
   const resumeId = params.id
+  const resumeData = await getResumeById(resumeId)
 
-  let resumeContent: any = null
-
-  try {
-    const { data: resume, error: fetchError } = await supabase
-      .from("resumes")
-      .select("content")
-      .eq("id", resumeId)
-      .eq("user_id", userId) // Ensure user owns the resume
-      .single()
-
-    if (fetchError) {
-      console.error("Error fetching resume:", fetchError)
-      if (fetchError.code === "PGRST116") {
-        notFound()
-      }
-      notFound()
-    }
-
-    if (!resume) {
-      notFound()
-    }
-
-    resumeContent = resume.content
-  } catch (e) {
-    console.error("Unexpected error in resume fetching:", e)
+  if (!resumeData) {
     notFound()
   }
 
-  const veltClient = new VeltClient({
-    apiKey: process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!,
-    userId,
-    userName: session.user?.name || "Anonymous",
-    userAvatar: session.user?.image || "/placeholder-user.png",
-  })
+  // You might want to add logic here to check if the current user has permission to view this resume
+  // For now, we'll assume if it's found, it's viewable.
 
   return (
-    <VeltProvider client={veltClient} documentId={resumeId}>
-      <main className="flex min-h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
-        <ResumeEditor initialResumeData={resumeContent} resumeId={resumeId} />
-      </main>
-    </VeltProvider>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 py-12">
+      <ResumeDisplay resumeData={resumeData} theme="modern" /> {/* Default theme for view mode */}
+    </div>
   )
 }

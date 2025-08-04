@@ -1,18 +1,10 @@
 {
   "name": "Creative",
+  "fontFamily": "cursive",
   "colors": {
-    "primary": "#FF6B6B",
-    "secondary": "#FFE66D",
-    "text": "#333333",
-    "background": "#F7FFF7",
-    "accent": "#4ECDC4"
-  },
-  "fonts": {
-    "heading": "sans-serif",
-    "body": "sans-serif"
-  },
-  "layout": {
-    "spacing": "wide",
-    "sections": ["personal", "summary", "experience", "skills", "education", "projects", "awards"]
+    "primary": "#D81B60",
+    "secondary": "#FF8A65",
+    "text": "#424242",
+    "background": "#FFFDE7"
   }
 }

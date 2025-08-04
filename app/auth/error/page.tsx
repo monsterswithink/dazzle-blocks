@@ -1,34 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { AlertCircle } from "lucide-react"
 
-export default function AuthErrorPage({
-  searchParams,
-}: {
-  searchParams: { error?: string }
-}) {
-  const error = searchParams.error
-
+export default function AuthErrorPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-4">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-            <AlertCircle className="h-6 w-6 text-red-600" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-red-900">Authentication Error</CardTitle>
-          <CardDescription className="text-red-700">
-            {error === "Configuration" && "There is a problem with the server configuration."}
-            {error === "AccessDenied" && "You do not have permission to sign in."}
-            {error === "Verification" && "The verification token has expired or has already been used."}
-            {!error && "An error occurred during authentication."}
+          <CardTitle className="text-3xl font-bold text-red-600">Authentication Error</CardTitle>
+          <CardDescription className="text-gray-500 dark:text-gray-400">
+            An error occurred during the authentication process.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
-            <Link href="/auth/signin">Try Again</Link>
-          </Button>
+        <CardContent className="space-y-4">
+          <p className="text-center text-gray-700 dark:text-gray-300">
+            Please try again. If the issue persists, contact support.
+          </p>
+          <Link href="/auth/signin" className="w-full">
+            <Button className="w-full">Try Again</Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

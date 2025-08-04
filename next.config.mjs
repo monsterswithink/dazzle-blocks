@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["@veltdev/react"],
-  },
+  reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -10,9 +9,22 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["media.licdn.com", "platform-lookaside.fbsbx.com"],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'platform-lookaside.fbsbx.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.licdn.com',
+      },
+    ],
     unoptimized: true,
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

@@ -3,36 +3,30 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Video, StopCircle, PlayCircle, Loader2 } from "lucide-react"
-import { useRoom } from "@veltdev/react"
-import { useToast } from "@/components/ui/use-toast"
-import { Recorder } from "@veltdev/recorder"
+import { useVeltClient } from "@veltdev/react"
+import { toast } from "sonner"
 
 export function ProfileVideoButton() {
-  const { room } = useRoom()
+  const { client: veltClient } = useVeltClient()
   const [isRecording, setIsRecording] = useState(false)
   const [isPlaybackAvailable, setIsPlaybackAvailable] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
 
   useEffect(() => {
-    if (room) {
+    if (veltClient) {
       // Initialize the Velt Recorder
-      const recorder = new Recorder(room.documentId)
+      const recorder = veltClient.recorder
 
       // Check if a recording exists for this document
       const checkRecording = async () => {
         setIsLoading(true)
         try {
           const recordings = await recorder.getRecordings()
-          const hasRecording = recordings.some((rec) => rec.documentId === room.documentId)
+          const hasRecording = recordings.some((rec) => rec.documentId === veltClient.documentId)
           setIsPlaybackAvailable(hasRecording)
         } catch (error) {
           console.error("Error checking recordings:", error)
-          toast({
-            title: "Recording Error",
-            description: "Failed to check for existing recordings.",
-            variant: "destructive",
-          })
+          toast.error("Failed to check for existing recordings.")
         } finally {
           setIsLoading(false)
         }
@@ -43,17 +37,11 @@ export function ProfileVideoButton() {
       const unsubscribeRecording = recorder.onRecordingStatusChange((status) => {
         if (status === "recording") {
           setIsRecording(true)
-          toast({
-            title: "Recording Started",
-            description: "Your screen and audio are now being recorded.",
-          })
+          toast("Your screen and audio are now being recorded.")
         } else if (status === "stopped") {
           setIsRecording(false)
           setIsPlaybackAvailable(true) // A new recording is now available
-          toast({
-            title: "Recording Stopped",
-            description: "Your recording has ended and is being processed.",
-          })
+          toast("Your recording has ended and is being processed.")
         }
       })
 
@@ -61,82 +49,37 @@ export function ProfileVideoButton() {
         unsubscribeRecording()
       }
     }
-  }, [room, toast])
+  }, [veltClient])
 
-  const handleRecord = async () => {
-    if (!room) {
-      toast({
-        title: "Error",
-        description: "Collaboration room not initialized.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const recorder = new Recorder(room.documentId)
-
-    if (isRecording) {
-      setIsLoading(true)
-      try {
-        await recorder.stopRecording()
-        // Status change listener will handle setIsRecording(false)
-      } catch (error) {
-        console.error("Error stopping recording:", error)
-        toast({
-          title: "Recording Error",
-          description: "Failed to stop recording.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
+  const handleRecordVideo = () => {
+    if (veltClient) {
+      veltClient.toggleRecorder()
     } else {
-      setIsLoading(true)
-      try {
-        await recorder.startRecording()
-        // Status change listener will handle setIsRecording(true)
-      } catch (error) {
-        console.error("Error starting recording:", error)
-        toast({
-          title: "Recording Error",
-          description: "Failed to start recording. Check browser permissions.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
+      toast.error("Velt client not initialized.")
     }
   }
 
   const handlePlayback = async () => {
-    if (!room) {
-      toast({
-        title: "Error",
-        description: "Collaboration room not initialized.",
-        variant: "destructive",
-      })
-      return
-    }
-    setIsLoading(true)
-    try {
-      const recorder = new Recorder(room.documentId)
-      // This will open the Velt playback UI for the current document
-      await recorder.playRecording()
-    } catch (error) {
-      console.error("Error playing recording:", error)
-      toast({
-        title: "Playback Error",
-        description: "Failed to play recording. No recording found or an error occurred.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+    if (veltClient) {
+      setIsLoading(true)
+      try {
+        const recorder = veltClient.recorder
+        // This will open the Velt playback UI for the current document
+        await recorder.playRecording()
+      } catch (error) {
+        console.error("Error playing recording:", error)
+        toast.error("Failed to play recording. No recording found or an error occurred.")
+      } finally {
+        setIsLoading(false)
+      }
+    } else {
+      toast.error("Velt client not initialized.")
     }
   }
 
   return (
     <div className="flex gap-2">
-      <Button onClick={handleRecord} disabled={isLoading} variant={isRecording ? "destructive" : "default"}>
+      <Button onClick={handleRecordVideo} disabled={isLoading} variant={isRecording ? "destructive" : "default"}>
         {isLoading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : isRecording ? (

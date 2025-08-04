@@ -21,7 +21,7 @@ export default async function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Link href="/api/auth/signin" className="w-full">
+          <Link href="/profile" className="w-full">
             <Button className="w-full">Sign In with LinkedIn</Button>
           </Link>
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">

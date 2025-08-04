@@ -3,24 +3,25 @@ import { NextResponse } from "next/server"
 
 export default auth((req) => {
   const { nextUrl } = req
-  const isAuthenticated = !!req.auth
+  const isLoggedIn = !!req.auth
 
-  const publicPaths = ["/", "/api/auth", "/auth/error", "/_next"] // Paths that don't require authentication
-  const isPublicPath = publicPaths.some((path) => nextUrl.pathname.startsWith(path))
+  const isAuthPage = nextUrl.pathname.startsWith("/auth")
+  const isProtectedRoute =
+    nextUrl.pathname.startsWith("/editor") ||
+    nextUrl.pathname.startsWith("/profile") ||
+    nextUrl.pathname.startsWith("/resume")
 
-  // Allow access to public paths
-  if (isPublicPath) {
+  if (isAuthPage) {
+    if (isLoggedIn) {
+      return NextResponse.redirect(new URL("/editor", nextUrl))
+    }
     return NextResponse.next()
   }
 
-  // If not authenticated and trying to access a protected path, redirect to sign-in
-  if (!isAuthenticated) {
-    const signInUrl = new URL("/api/auth/signin", nextUrl.origin)
-    signInUrl.searchParams.set("callbackUrl", nextUrl.pathname)
-    return NextResponse.redirect(signInUrl)
+  if (isProtectedRoute && !isLoggedIn) {
+    return NextResponse.redirect(new URL("/auth/signin", nextUrl))
   }
 
-  // If authenticated, allow access
   return NextResponse.next()
 })
 

@@ -972,7 +972,7 @@ export function VeltProvider({ children, documentId, client }: VeltProviderProps
 \`\`\`
 \`\`\`
 
-```plaintext file="instructions/STEP3_MIGRATE_LIVEBLOCKS_TO_VELT"
+\`\`\`plaintext file="instructions/STEP3_MIGRATE_LIVEBLOCKS_TO_VELT"
 # Step 3: Migrate Liveblocks to Velt
 
 This step guides you through migrating your real-time collaboration features from Liveblocks to Velt. Velt offers a comprehensive suite of collaboration tools, including presence, comments, annotations, and live cursors, often with simpler integration.
@@ -1986,7 +1986,7 @@ const dummyAnalyticsData = {
 \`\`\`
 \`\`\`
 
-```plaintext file="instructions/providerParam.md"
+\`\`\`plaintext file="instructions/providerParam.md"
 # Provider Parameter for Auth.js v5
 
 This document explains how to correctly pass the `provider` parameter when using `signIn` and `signOut` functions in Auth.js v5 (formerly NextAuth.js).

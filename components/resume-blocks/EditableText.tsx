@@ -1,103 +1,85 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useEditor, EditorContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import Link from "@tiptap/extension-link"
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor"
-import { createVeltTipTapStore } from "@veltdev/tiptap-crdt"
-import { supabase } from "@/lib/supabase"
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface EditableTextProps {
-  initialContent: string
-  onUpdate: (content: string) => void
-  placeholder?: string
+  value: string
+  onChange: (value: string) => void
+  multiline?: boolean
   className?: string
-  tag?: keyof JSX.IntrinsicElements
-  editorId: string
+  placeholder?: string
 }
 
-export function EditableText({
-  initialContent,
-  onUpdate,
-  placeholder,
-  className,
-  tag: WrapperTag = "p",
-  editorId,
-}: EditableTextProps) {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [veltStore, setVeltStore] = useState<any>(null)
-  const [user, setUser] = useState<{ name: string; color: string }>({
-    name: "Anonymous",
-    color: "#3b82f6", // 💙 Tailwind blue-500 fallback
-  })
+export function EditableText({ value, onChange, multiline = false, className, placeholder }: EditableTextProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(value)
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser()
-
-      if (data?.user) {
-        setUser({
-          name: data.user.email ?? "Unnamed",
-          color: "#16a34a", // 💚 Tailwind green-600
-        })
-      }
-    }
-
-    fetchUser()
-  }, [])
+    setEditValue(value)
+  }, [value])
 
   useEffect(() => {
-    const initializeStore = async () => {
-      if (!editorId) return
-
-      const store = await createVeltTipTapStore({
-        documentId: editorId,
-      })
-
-      setVeltStore(store)
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
     }
+  }, [isEditing])
 
-    initializeStore()
-  }, [editorId])
+  const handleSave = () => {
+    onChange(editValue)
+    setIsEditing(false)
+  }
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ history: false }),
-      Link.configure({ autolink: true }),
-      ...(veltStore
-        ? [
-            veltStore.getCollabExtension(),
-            CollaborationCursor.configure({
-              provider: veltStore.getStore().getProvider(),
-              user,
-            }),
-          ]
-        : []),
-    ],
-    content: initialContent,
-    onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML())
-    },
-    editorProps: {
-      attributes: {
-        class: "ProseMirror min-h-[1em] focus:outline-none",
-        "data-placeholder": placeholder || "",
-      },
-    },
-  })
+  const handleCancel = () => {
+    setEditValue(value)
+    setIsEditing(false)
+  }
 
-  useEffect(() => {
-    if (editor && initialContent && editor.getHTML() !== initialContent) {
-      editor.commands.setContent(initialContent, false, { preserveCursor: true })
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !multiline) {
+      e.preventDefault()
+      handleSave()
+    } else if (e.key === "Enter" && e.ctrlKey && multiline) {
+      e.preventDefault()
+      handleSave()
+    } else if (e.key === "Escape") {
+      handleCancel()
     }
-  }, [editor, initialContent])
+  }
 
-  if (!editor) return null
+  if (isEditing) {
+    const InputComponent = multiline ? "textarea" : "input"
+    return (
+      <InputComponent
+        ref={inputRef as any}
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          "w-full bg-transparent border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500",
+          className,
+        )}
+        placeholder={placeholder}
+        rows={multiline ? 3 : undefined}
+      />
+    )
+  }
 
   return (
-    <WrapperTag className={className} ref={editorRef}>
-      <EditorContent editor={editor} />
-    </WrapperTag>
+    <div
+      onClick={() => setIsEditing(true)}
+      className={cn(
+        "cursor-text hover:bg-gray-50 rounded px-2 py-1 min-h-[1.5rem] transition-colors",
+        !value && "text-gray-400",
+        className,
+      )}
+    >
+      {value || placeholder || "Click to edit"}
+    </div>
   )
 }

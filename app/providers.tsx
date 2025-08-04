@@ -1,20 +1,18 @@
 "use client"
 
-import { SessionProvider } from "next-auth/react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-import type { ThemeProviderProps } from "next-themes"
-import { Toaster } from "@/components/ui/toaster"
-import { VeltProvider } from "@veltdev/react"
+import type React from "react"
 
-export function Providers({ children, ...props }: ThemeProviderProps) {
+import { SessionProvider } from "next-auth/react"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
+
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <VeltProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!} documentId="resume-app-root">
-        <NextThemesProvider {...props}>
-          {children}
-          <Toaster />
-        </NextThemesProvider>
-      </VeltProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        {children}
+        <Toaster />
+      </ThemeProvider>
     </SessionProvider>
   )
 }

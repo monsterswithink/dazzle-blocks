@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
-    config.externals.push({
-      "node:buffer": "commonjs node:buffer",
-    });
-    return config;
+  experimental: {
+    serverComponentsExternalPackages: ["@veltdev/react"],
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -13,8 +10,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    domains: ["media.licdn.com", "platform-lookaside.fbsbx.com"],
     unoptimized: true,
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

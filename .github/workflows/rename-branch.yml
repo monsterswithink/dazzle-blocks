@@ -24,7 +24,7 @@ jobs:
       - name: Extract BRANCH_PROVIDER
         id: provider
         run: |
-          provider=$(grep -oP 'BRANCH_PROVIDER="\K[^"]+' ./instructions/providerBranch.md)
+          provider=$(grep -oP 'BRANCH_PROVIDER="\K[^"]+' ./instructions/providerParam.md)
           echo "provider=$provider" >> "$GITHUB_OUTPUT"
 
       - name: Calculate next branch name

@@ -31,7 +31,7 @@
       "@/hooks/*": ["./hooks/*"],
       "@/public/*": ["./public/*"],
       "#auth": ["./lib/auth.ts"],
-      "@/auth": ["./lib/auth.ts"],
+      "@/lib/auth": ["./lib/auth.ts"],
       "@/scripts/*": ["./scripts/*"],
       "@/resume-providers/*": ["./components/resume-providers/*"],
       "@/utils/*": ["./utils/*"],

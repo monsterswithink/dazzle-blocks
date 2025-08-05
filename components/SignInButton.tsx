@@ -6,3 +6,7 @@ import { Button } from "@/ui/button"
 export default function SignIn() {
   return <Button onClick={() => signIn("linkedin")} />
 }
+// className="w-full"
+//   onClick={() => signIn("linkedin", {
+//     callbackUrl: searchParams.get("from") ?? "/profile",
+//   })}

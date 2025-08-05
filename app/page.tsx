@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/ui/button"
+import { SignIn } from "@/components/SignInButton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { auth } from "@/lib/auth"
@@ -21,14 +22,9 @@ export default async function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
-  className="w-full"
-  onClick={() => signIn("linkedin", {
-    callbackUrl: searchParams.get("from") ?? "/profile",
-  })}
->
-  <Linkedin className="mr-2 h-4 w-4" /> Sign In with LinkedIn
-</Button>
+          <SignIn>
+    <Linkedin className="mr-2 h-4 w-4" /> Sign In with LinkedIn
+  </SignIn>
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>

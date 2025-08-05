@@ -1,44 +1,24 @@
-// lib/auth.ts
 import NextAuth from "next-auth"
-import LinkedIn from "next-auth/providers/linkedin"
+import LinkedInProvider from "next-auth/providers/linkedin"
 
 export const authOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // Enable debug logging
   providers: [
     LinkedInProvider({
       clientId: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-      profile(profile: any) {
-        return {
-          id: profile.id,
-          name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
-          email: profile.emailAddress || null,
-          image: profile.profilePicture?.['displayImage~']?.elements?.[0]?.identifiers?.[0]?.identifier || null,
-        }
+      authorization: {
+        params: {
+          scope: "r_liteprofile r_emailaddress",
+        },
       },
     }),
   ],
-  pages: {
-    signIn: '/auth/signin', // Custom sign-in page if needed
-  },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, account, profile }) {
-      if (account) {
-        token.linkedinId = profile?.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          linkedinId: token.linkedinId,
-        },
-      }
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl
     },
   },
-};
+}
 
-export default NextAuth(authOptions);
+export const { auth } = NextAuth(authOptions)

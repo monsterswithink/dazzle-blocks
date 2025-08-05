@@ -1,6 +1,6 @@
 // lib/auth.ts
 import NextAuth from "next-auth"
-import LinkedInProvider from "next-auth/providers/linkedin"
+import LinkedIn from "next-auth/providers/linkedin"
 
 export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,

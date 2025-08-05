@@ -30,6 +30,8 @@
       "@/lib/*": ["./lib/*"],
       "@/hooks/*": ["./hooks/*"],
       "@/public/*": ["./public/*"],
+      "#auth": ["./lib/auth.ts"],
+      "@/auth": ["./lib/auth.ts"],
       "@/scripts/*": ["./scripts/*"],
       "@/resume-providers/*": ["./components/resume-providers/*"],
       "@/utils/*": ["./utils/*"],

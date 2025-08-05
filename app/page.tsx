@@ -22,9 +22,7 @@ export default async function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SignIn>
-    <Linkedin className="mr-2 h-4 w-4" /> Sign In with LinkedIn
-  </SignIn>
+          <SignIn />
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>

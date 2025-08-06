@@ -8,12 +8,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     LinkedIn({
       clientId: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      profile(profile) {
+      authorization: {
+        params: { scope: "openid profile email" },
+      },
+      profile: (profile) => {
         return {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,
+          vanityUrl: `https://www.linkedin.com/in/${profile.vanityName}`,
         }
       },
     }),
@@ -24,17 +28,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     supabaseClient: createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!),
   }),
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, user, token }) {
       if (session?.user) {
         session.user.id = user.id
+        if (token.vanityUrl) {
+          session.user.vanityUrl = token.vanityUrl as string
+        }
       }
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.id = user.id
       }
+      if (profile) {
+        const profileWithVanity = profile as any
+        if (profileWithVanity.vanityName) {
+          token.vanityUrl = `https://www.linkedin.com/in/${profileWithVanity.vanityName}`
+        }
+      }
       return token
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl + "/profile"
     },
   },
   pages: {
@@ -48,3 +68,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   secret: process.env.NEXTAUTH_SECRET,
 })
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      vanityUrl: string
+    } & {
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
+}

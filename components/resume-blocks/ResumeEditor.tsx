@@ -16,13 +16,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, Plus, Minus, Download, Eye, Loader2 } from "lucide-react"
 import { ProfileSnapshotCard } from "@/components/resume-blocks/ProfileSnapshotCard"
 import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
-import { PresenceAvatars } from "@/components/resume-tools/PresenceAvatars"
 import { ProfileVideoButton } from "@/components/resume-tools/ProfileVideoButton"
 import { SharePopover } from "@/components/resume-tools/SharePopover"
 import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
 import { EditableText } from "@/components/resume-blocks/EditableText"
 import { Skills } from "@/components/resume-blocks/Skills"
-import { VeltComments, VeltRecorder, VeltAnalytics, VeltPresence, useVeltClient } from "@veltdev/react"
+import { VeltComments, VeltRecorderTool, VeltRecorderControlPanel, VeltViewAnalytics, VeltPresence, useVeltClient } from "@veltdev/react"
 import { toast } from "sonner"
 
 interface ResumeEditorProps {
@@ -221,7 +220,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <PresenceAvatars />
+          <VeltPresence />
           <SharePopover isOpen={isSharePopoverOpen} onOpenChange={setIsSharePopoverOpen} resumeId={resumeId} />
           <Button variant="outline" size="sm" onClick={handleView}>
             <Eye className="w-4 h-4 mr-2" /> View
@@ -644,9 +643,9 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
             <ResumeDisplay resumeData={resumeData} theme={selectedTheme} />
             {isEditing && editor && <FloatingToolbar editor={editor} />}
             <VeltComments />
-            <VeltRecorder />
-            <VeltPresence />
-            <VeltAnalytics />
+            <VeltRecorderTool />
+            <VeltRecorderControlPanel />
+            <VeltViewAnalytics />
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>

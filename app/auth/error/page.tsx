@@ -1,23 +1,43 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default function AuthErrorPage() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+
+  const errors: { [key: string]: string } = {
+    Signin: 'Try signing in with a different account.',
+    OAuthSignin: 'Try signing in with a different account.',
+    OAuthCallback: 'Try signing in with a different account.',
+    OAuthCreateAccount: 'Try signing in with a different account.',
+    EmailCreateAccount: 'Try signing in with a different account.',
+    Callback: 'Try signing in with a different account.',
+    OAuthAccountNotLinked: 'To confirm your identity, sign in with the same account you used originally.',
+    EmailSignin: 'Check your email address.',
+    CredentialsSignin: 'Sign in failed. Check the details you provided are correct.',
+    default: 'Unable to sign in.',
+  }
+
+  const errorMessage = error && (errors[error] || errors.default)
+
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-red-600">Authentication Error</CardTitle>
+          <CardTitle className="text-3xl font-bold">Authentication Error</CardTitle>
           <CardDescription className="text-gray-500 dark:text-gray-400">
-            An error occurred during the authentication process.
+            {errorMessage}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-center text-gray-700 dark:text-gray-300">
-            Please try again. If the issue persists, contact support.
-          </p>
-          <Link href="/auth/signin" className="w-full">
-            <Button className="w-full">Try Again</Button>
+        <CardContent className="flex flex-col gap-4">
+          <Link href="/auth/signin">
+            <Button className="w-full">
+              Return to Sign In
+            </Button>
           </Link>
         </CardContent>
       </Card>

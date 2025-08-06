@@ -1,31 +1,25 @@
-import { Button } from "@/ui/button"
-import SignIn from "@/components/SignInButton"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { GithubIcon, LinkedinIcon } from 'lucide-react'
 
-export default async function HomePage() {
-  const session = await auth()
-
-  if (session) {
-    redirect("/editor")
-  }
-
+export default function HomePage() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Welcome to Resume Editor</CardTitle>
           <CardDescription className="text-gray-500 dark:text-gray-400">
-            Create, edit, and collaborate on your professional resume.
+            A collaborative resume editor powered by Next.js and Velt.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <SignIn />
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
-          </p>
+        <CardContent className="flex flex-col gap-4">
+          <Link href="/auth/signin">
+            <Button className="w-full">
+              <LinkedinIcon className="mr-2 h-5 w-5" />
+              Sign in with LinkedIn
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

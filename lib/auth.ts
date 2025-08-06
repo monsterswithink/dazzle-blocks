@@ -54,20 +54,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const { nextUrl } = request;
       const isAuthenticated = !!auth;
 
-      const isPublicRoute = nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/auth");
+      const isOnDashboard = nextUrl.pathname.startsWith('/profile');
 
-      if (isAuthenticated && (nextUrl.pathname.startsWith("/auth") || nextUrl.pathname === "/")) {
-        return NextResponse.redirect(new URL("/profile", request.url));
-      }
-
-      if (!isAuthenticated && !isPublicRoute) {
-        let from = nextUrl.pathname;
-        if (nextUrl.search) {
-          from += nextUrl.search;
-        }
-        const url = new URL(`/auth/signin`, nextUrl.origin);
-        url.searchParams.set("from", from);
-        return NextResponse.redirect(url);
+      if (isOnDashboard) {
+        if (isAuthenticated) return true;
+        return false; // Redirect unauthenticated users to login page
+      } else if (isAuthenticated) {
+        return NextResponse.redirect(new URL('/profile', request.url));
       }
 
       return true;

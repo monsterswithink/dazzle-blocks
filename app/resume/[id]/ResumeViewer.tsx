@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useDocument, useSetDocumentId } from "@veltdev/react"
+import { useSetDocumentId } from "@veltdev/react"
+import { useDocument, DocumentProvider } from "@veltdev/sdk"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -44,7 +45,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   useSetDocumentId(resumeId)
 
   // Velt's useDocument hook for real-time state management
-  const { state: resumeData, set: setResumeData, isReady } = useDocument<any>()
+  const { state: resumeData, set: setResumeData } = useDocument<any>()
 
   const editor = useEditor({
     extensions: [
@@ -93,12 +94,12 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
       }
     }
 
-    if (isReady && !resumeData) {
+    if (!resumeData) {
       fetchAndSetInitialData()
-    } else if (isReady && resumeData) {
+    } else {
       setLoading(false)
     }
-  }, [resumeId, session, status, router, isReady, resumeData, setResumeData])
+  }, [resumeId, session, status, router, resumeData, setResumeData])
 
   useEffect(() => {
     if (editor && resumeData?.about?.description !== editor.getHTML()) {
@@ -233,6 +234,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   }
 
   return (
+    <DocumentProvider id={resumeId}>
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
       <header className="flex items-center justify-between p-4 border-b bg-white dark:bg-gray-900">
         <div className="flex items-center gap-4">
@@ -680,5 +682,6 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
         </ResizablePanelGroup>
       </main>
     </div>
+    </DocumentProvider>
   )
 }

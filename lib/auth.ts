@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import LinkedIn from "next-auth/providers/linkedin"
 import { SupabaseAdapter } from "@auth/supabase-adapter"
 import { createClient } from "@supabase/supabase-js"
+import { NextResponse } from "next/server"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -49,13 +50,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token
     },
-    async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
-    },
+    authorized({ request, auth }) {
+      const { nextUrl } = request;
+      const isAuthenticated = !!auth;
+
+      const isPublicRoute = nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/auth");
+
+      if (isAuthenticated && (nextUrl.pathname.startsWith("/auth") || nextUrl.pathname === "/")) {
+        return NextResponse.redirect(new URL("/profile", request.url));
+      }
+
+      if (!isAuthenticated && !isPublicRoute) {
+        let from = nextUrl.pathname;
+        if (nextUrl.search) {
+          from += nextUrl.search;
+        }
+        const url = new URL(`/auth/signin`, nextUrl.origin);
+        url.searchParams.set("from", from);
+        return NextResponse.redirect(url);
+      }
+
+      return true;
+    }
   },
   pages: {
     signIn: "/auth/signin",

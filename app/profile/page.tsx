@@ -23,24 +23,36 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndEnrich = async () => {
       if (status === "authenticated") {
         try {
           setLoading(true)
           setError(null)
-          const response = await fetch("/api/profile")
-          if (response.status === 404) {
-            setProfile(null) // Profile not found, user can create one
-          } else if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.message || "Failed to fetch profile.")
-          } else {
-            const data: Profile = await response.json()
+
+          // First, try to fetch the existing profile
+          const profileResponse = await fetch("/api/profile")
+          if (profileResponse.ok) {
+            const data: Profile = await profileResponse.json()
             setProfile(data)
+            setLoading(false)
+            return // Profile exists, no need to enrich
+          }
+
+          // If profile not found, and we have a vanityUrl, enrich it
+          if (session?.user?.vanityUrl) {
+            const enrichResponse = await fetch(`/api/enrich?linkedinProfileUrl=${encodeURIComponent(session.user.vanityUrl)}`)
+            if (!enrichResponse.ok) {
+              const errorData = await enrichResponse.json()
+              throw new Error(errorData.message || "Failed to enrich profile.")
+            }
+            const enrichedData: Profile = await enrichResponse.json()
+            setProfile(enrichedData)
+            // Automatically save the enriched profile
+            await handleCreateOrUpdateProfile(enrichedData)
           }
         } catch (err: any) {
           setError(err.message)
-          toast.error("Failed to load profile", {
+          toast.error("Failed to load or enrich profile", {
             description: err.message,
           })
         } finally {
@@ -51,11 +63,11 @@ export default function ProfilePage() {
       }
     }
 
-    fetchProfile()
-  }, [status, router])
+    fetchProfileAndEnrich()
+  }, [status, router, session])
 
-  const handleCreateOrUpdateProfile = async () => {
-    if (!profile) {
+  const handleCreateOrUpdateProfile = async (profileData: Profile) => {
+    if (!profileData) {
       toast.error("Profile data is empty. Cannot save.")
       return
     }
@@ -63,13 +75,13 @@ export default function ProfilePage() {
     setLoading(true)
     setError(null)
     try {
-      const method = profile.id ? "PUT" : "POST"
+      const method = profileData.id ? "PUT" : "POST"
       const response = await fetch("/api/profile", {
         method: method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(profileData),
       })
 
       if (!response.ok) {
@@ -83,7 +95,7 @@ export default function ProfilePage() {
       toast.success(`Profile ${method === "POST" ? "created" : "updated"} successfully!`)
     } catch (err: any) {
       setError(err.message)
-      toast.error(`Failed to ${profile.id ? "update" : "create"} profile`, {
+      toast.error(`Failed to ${profileData.id ? "update" : "create"} profile`, {
         description: err.message,
       })
     } finally {
@@ -274,7 +286,7 @@ export default function ProfilePage() {
                 />
               </div>
               {isEditing && (
-                <Button onClick={handleCreateOrUpdateProfile} disabled={loading}>
+                <Button onClick={() => handleCreateOrUpdateProfile(profile)} disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -288,12 +300,9 @@ export default function ProfilePage() {
             </div>
           ) : (
             <p className="text-center text-gray-500 dark:text-gray-400">
-              No profile found. Click "Create Profile" to get started or "Enrich Profile" to import from LinkedIn.
+              No profile found. Click "Create Profile" to get started.
             </p>
           )}
-          <Button onClick={() => router.push("/profile/enriched")} className="w-full">
-            Enrich Profile from LinkedIn
-          </Button>
         </CardContent>
       </Card>
     </div>

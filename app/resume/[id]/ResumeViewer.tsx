@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useSetDocumentId } from "@veltdev/react"
-import { useDocument, DocumentProvider } from "@veltdev/sdk"
+import { useVeltClient, useSetDocumentId } from "@veltdev/react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -40,12 +39,12 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState("modern")
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false)
+  const [resumeData, setResumeData] = useState<any>(null)
+
+  const { client: veltClient } = useVeltClient()
 
   // Set the document ID for Velt
   useSetDocumentId(resumeId)
-
-  // Velt's useDocument hook for real-time state management
-  const { state: resumeData, set: setResumeData } = useDocument<any>()
 
   const editor = useEditor({
     extensions: [
@@ -77,9 +76,11 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
             throw new Error(errorData.message || "Failed to fetch resume.")
           }
           const data = await response.json()
-          // Set the initial state of the Velt document
-          if (!resumeData) {
-            setResumeData(data)
+          setResumeData(data)
+          if (veltClient) {
+            veltClient.setDocument('document', {
+              data: data,
+            });
           }
         } catch (err: any) {
           setError(err.message)
@@ -99,13 +100,25 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
     } else {
       setLoading(false)
     }
-  }, [resumeId, session, status, router, resumeData, setResumeData])
+  }, [resumeId, session, status, router, resumeData, setResumeData, veltClient])
 
   useEffect(() => {
     if (editor && resumeData?.about?.description !== editor.getHTML()) {
       editor.commands.setContent(resumeData?.about?.description || "")
     }
   }, [resumeData?.about?.description, editor])
+
+  useEffect(() => {
+    if (veltClient) {
+      const doc = veltClient.getDocument('document');
+      if (doc) {
+        const unsubscribe = doc.subscribe((doc) => {
+          setResumeData(doc.data);
+        });
+        return () => unsubscribe();
+      }
+    }
+  }, [veltClient]);
 
   const handleAddExperience = () => {
     setResumeData((prev: any) => ({
@@ -195,7 +208,7 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
     router.push(`/resume/${resumeId}/view`)
   }
 
-  if (status === "loading" || loading || !isReady) {
+  if (status === "loading" || loading) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
         <div className="space-y-4 text-center">
@@ -234,7 +247,6 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
   }
 
   return (
-    <DocumentProvider id={resumeId}>
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
       <header className="flex items-center justify-between p-4 border-b bg-white dark:bg-gray-900">
         <div className="flex items-center gap-4">
@@ -682,6 +694,5 @@ export default function ResumeViewer({ resumeId }: ResumeViewerProps) {
         </ResizablePanelGroup>
       </main>
     </div>
-    </DocumentProvider>
   )
 }

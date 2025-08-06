@@ -12,8 +12,6 @@
     "@auth/core": "latest",
     "@auth/nextjs": "latest",
     "@auth/supabase-adapter": "latest",
-    "@liveblocks/client": "latest",
-    "@liveblocks/react": "latest",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",

@@ -50,11 +50,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token
     },
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl + "/profile"
+      console.log("Redirecting to:", url, "from:", baseUrl)
+      // After a successful sign-in, redirect to the profile page.
+      return `${baseUrl}/profile`
     },
   },
   pages: {

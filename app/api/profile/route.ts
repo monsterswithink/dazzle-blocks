@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { supabase } from "@/lib/supabase"
 import type { Profile } from "@/types/profile"
 
-export async function GET() {
+export async function GET() {(
  const session = await auth()
 
  if (!session || !session.user?.id) {

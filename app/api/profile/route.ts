@@ -1,85 +1,120 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { supabase } from "@/lib/supabase"
-import type { Profile } from "@/types/profile"
 
-export async function GET() {
-  const session = await auth()
+export async function GET(request: Request) {
+  const accessToken = request.headers.get("authorization")?.replace("Bearer ", "")
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+  console.log("Incoming request to /api/profile")
+  console.log("Access token:", accessToken?.slice(0, 10), "...")
+
+  if (!accessToken) {
+    return NextResponse.json({ error: "Access token missing" }, { status: 401 })
   }
 
   try {
-    const { data, error } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single()
+    const res = await fetch("https://api.linkedin.com/v2/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "X-Restli-Protocol-Version": "2.0.0",
+      },
+    })
 
-    if (error && error.code !== "PGRST116") {
-      // PGRST116 means no rows found
-      throw new Error(error.message)
+    const raw = await res.text()
+    console.log("LinkedIn raw response:", raw)
+
+    if (!res.ok) {a
+      return NextResponse.json({ error: "LinkedIn API error", details: raw }, { status: res.status })
     }
 
-    if (!data) {
-      return NextResponse.json({ message: "Profile not found" }, { status: 404 })
-    }
-
-    return NextResponse.json(data)
+    const profileData = JSON.parse(raw)
+    return NextResponse.json(profileData)
   } catch (error: any) {
-    console.error("Error fetching profile:", error.message)
-    return NextResponse.json({ message: "Failed to fetch profile", error: error.message }, { status: 500 })
-  }
+    console.error("Error fetching LinkedIn profile:", error.message)
+    return NextResponse.json({ error: "Server error", details: error.message }, { status: 500 })
+  ZSEWA32qqQ!`~~~~~~``}
 }
 
-export async function POST(request: Request) {
-  const session = await auth()
+// import { NextResponse } from "next/server"
+// import { auth } from "@/lib/auth"
+// import { supabase } from "@/lib/supabase"
+// import type { Profile } from "@/types/profile"
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
+// export async function GET() {
+//   const session = await auth()
 
-  const profileData: Profile = await request.json()
+//   if (!session || !session.user?.id) {
+//     return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+//   }
 
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert({ ...profileData, user_id: session.user.id })
-      .select()
-      .single()
+//   try {
+//     const { data, error } = await supabase.from("profiles").select("*").eq("user_id", session.user.id).single()
 
-    if (error) {
-      throw new Error(error.message)
-    }
+//     if (error && error.code !== "PGRST116") {
+//       // PGRST116 means no rows found
+//       throw new Error(error.message)
+//     }
 
-    return NextResponse.json(data, { status: 201 })
-  } catch (error: any) {
-    console.error("Error creating profile:", error.message)
-    return NextResponse.json({ message: "Failed to create profile", error: error.message }, { status: 500 })
-  }
-}
+//     if (!data) {
+//       return NextResponse.json({ message: "Profile not found" }, { status: 404 })
+//     }
 
-export async function PUT(request: Request) {
-  const session = await auth()
+//     return NextResponse.json(data)
+//   } catch (error: any) {
+//     console.error("Error fetching profile:", error.message)
+//     return NextResponse.json({ message: "Failed to fetch profile", error: error.message }, { status: 500 })
+//   }
+// }
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
+// export async function POST(request: Request) {
+//   const session = await auth()
 
-  const profileData: Profile = await request.json()
+//   if (!session || !session.user?.id) {
+//     return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+//   }
 
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .update(profileData)
-      .eq("user_id", session.user.id)
-      .select()
-      .single()
+//   const profileData: Profile = await request.json()
 
-    if (error) {
-      throw new Error(error.message)
-    }
+//   try {
+//     const { data, error } = await supabase
+//       .from("profiles")
+//       .insert({ ...profileData, user_id: session.user.id })
+//       .select()
+//       .single()
 
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error("Error updating profile:", error.message)
-    return NextResponse.json({ message: "Failed to update profile", error: error.message }, { status: 500 })
-  }
-}
+//     if (error) {
+//       throw new Error(error.message)
+//     }
+
+//     return NextResponse.json(data, { status: 201 })
+//   } catch (error: any) {
+//     console.error("Error creating profile:", error.message)
+//     return NextResponse.json({ message: "Failed to create profile", error: error.message }, { status: 500 })
+//   }
+// }
+
+// export async function PUT(request: Request) {
+//   const session = await auth()
+
+//   if (!session || !session.user?.id) {
+//     return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+//   }
+
+//   const profileData: Profile = await request.json()
+
+//   try {
+//     const { data, error } = await supabase
+//       .from("profiles")
+//       .update(profileData)
+//       .eq("user_id", session.user.id)
+//       .select()
+//       .single()
+
+//     if (error) {
+//       throw new Error(error.message)
+//     }
+
+//     return NextResponse.json(data)
+//   } catch (error: any) {
+//     console.error("Error updating profile:", error.message)
+//     return NextResponse.json({ message: "Failed to update profile", error: error.message }, { status: 500 })
+//   }
+// }

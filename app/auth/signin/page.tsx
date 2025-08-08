@@ -16,7 +16,7 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Button onClick={() => signIn('linkedin')}>
+          <Button onClick={() => signIn('linkedin', { callbackUrl: '/profile' })}>
             <LinkedinIcon className="mr-2 h-5 w-5" />
             Sign in with LinkedIn
           </Button>

@@ -2,7 +2,6 @@ import NextAuth from "next-auth"
 import LinkedIn from "next-auth/providers/linkedin"
 import { SupabaseAdapter } from "@auth/supabase-adapter"
 import { createClient } from "@supabase/supabase-js"
-import { NextResponse } from "next/server"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -50,21 +49,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token
     },
-    authorized({ request, auth }) {
-      const { nextUrl } = request;
-      const isAuthenticated = !!auth;
-
-      const isOnDashboard = nextUrl.pathname.startsWith('/profile');
-
-      if (isOnDashboard) {
-        if (isAuthenticated) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isAuthenticated) {
-        return NextResponse.redirect(new URL('/profile', request.url));
-      }
-
-      return true;
-    }
   },
   pages: {
     signIn: "/auth/signin",

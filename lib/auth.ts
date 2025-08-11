@@ -60,7 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (isAuthenticated) return true;
         return false; // Redirect unauthenticated users to login page
       } else if (isAuthenticated) {
-        return NextResponse.redirect(new URL('http://localhost:3000/profile', request.url));
+        return NextResponse.redirect(new URL('https://v0-liveblocks-resume-editor.vercel.app/profile', request.url));
       }
 
       return true;

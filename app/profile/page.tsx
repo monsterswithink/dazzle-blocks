@@ -53,8 +53,8 @@ export default function ProfilePage() {
           setLoading(false)
         }
       } else if (status === "unauthenticated") {
-        router.push("/auth/signin")
-      }
+  router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL}/profile`)}`)
+}
     }
 
     fetchProfileAndEnrich()

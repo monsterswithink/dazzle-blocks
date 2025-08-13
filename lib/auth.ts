@@ -50,21 +50,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token
     },
-    authorized({ request, auth }) {
-      const { nextUrl } = request;
-      const isAuthenticated = !!auth;
+   authorized({ request, auth }) {
+  const { nextUrl } = request
+  const isAuthenticated = !!auth
+  const isOnDashboard = nextUrl.pathname.startsWith("/profile")
 
-      const isOnDashboard = nextUrl.pathname.startsWith('/profile');
+  if (isOnDashboard) {
+    if (isAuthenticated) return true
 
-      if (isOnDashboard) {
-        if (isAuthenticated) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isAuthenticated) {
-        return NextResponse.redirect(new URL('https://v0-liveblocks-resume-editor.vercel.app/profile', request.url));
-      }
+    // Redirect to sign-in, carrying the full current URL as callbackUrl
+    return NextResponse.redirect(
+      new URL(`/auth/signin?callbackUrl=${encodeURIComponent(nextUrl.href)}`, request.url)
+    )
+  } else if (isAuthenticated) {
+    return NextResponse.redirect(
+      new URL("/profile", request.url)
+    )
+  }
 
-      return true;
-    }
+  return true
+}
   },
   pages: {
     signIn: "/auth/signin",

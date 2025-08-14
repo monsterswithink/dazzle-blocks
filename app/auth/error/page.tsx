@@ -1,42 +1,31 @@
-'use client'
+"use client"
 
-import { useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui/card'
-import Link from 'next/link'
-import { SignIn } from '@/buttons/SignIn'
+import { Loader2 } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { useEffect, useState } from "react"
 
-export default function AuthErrorPage() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
+export default function AuthError() {
+  const [progress, setProgress] = useState(0)
 
-  const errors: { [key: string]: string } = {
-    Signin: 'Try signing in with a different account.',
-    OAuthSignin: 'Try signing in with a different account.',
-    OAuthCallback: 'Try signing in with a different account.',
-    OAuthCreateAccount: 'Try signing in with a different account.',
-    EmailCreateAccount: 'Try signing in with a different account.',
-    Callback: 'Try signing in with a different account.',
-    OAuthAccountNotLinked: 'To confirm your identity, sign in with the same account you used originally.',
-    EmailSignin: 'Check your email address.',
-    CredentialsSignin: 'Sign in failed. Check the details you provided are correct.',
-    default: 'Unable to sign in.',
-  }
-
-  const errorMessage = error && (errors[error] || errors.default)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 100 : prev + 5))
+    }, 150)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Authentication Error</CardTitle>
-          <CardDescription className="text-gray-500 dark:text-gray-400">
-            {errorMessage}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <SignIn />
-        </CardContent>
-      </Card>
+      <div className="space-y-4 text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-red-500 mx-auto" />
+        <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">
+          Authentication Error
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Please wait while we process your request...
+        </p>
+        <Progress value={progress} className="w-[300px]" />
+      </div>
     </div>
   )
 }

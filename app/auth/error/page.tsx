@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { SignIn } from '@/buttons/SignIn'
 
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()
@@ -34,11 +34,7 @@ export default function AuthErrorPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Link href="/profile">
-            <Button className="w-full">
-              Return to Sign In
-            </Button>
-          </Link>
+          <SignIn />
         </CardContent>
       </Card>
     </div>

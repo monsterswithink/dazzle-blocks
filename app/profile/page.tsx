@@ -1,90 +1,104 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSession } from "next-auth/react"
-import { createClient } from "@supabase/supabase-js"
+import { useRouter } from "next/navigation"
+import { FloatingToolbar } from "@/components/FloatingToolbar"
+import { ResumePreview } from "@/components/ResumePreview"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+interface EnrichedProfile {
+  id: string
+  name: string
+  headline: string
+  theme: string
+  // …rest of your resume fields
+}
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
-  const [profile, setProfile] = useState<any>(null)
+  const router = useRouter()
+  const [profile, setProfile] = useState<EnrichedProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Redirect if not signed in
   useEffect(() => {
-    if (status !== "authenticated" || !session?.user?.id) return
+    if (status === "unauthenticated") {
+      router.push("/signin")
+    }
+  }, [status, router])
 
-    const fetchProfile = async () => {
-      setLoading(true)
+  // Fetch + Enrich only when session is ready
+  useEffect(() => {
+    if (!session?.user) return
 
-      // 1️⃣ Check Supabase for profile
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single()
+    let isMounted = true
 
-      if (existing) {
-        setProfile(existing)
-        setLoading(false)
-        return
-      }
-
-      // 2️⃣ If no profile → run enrichment
+    async function loadProfile() {
       try {
-        const res = await fetch("/api/enrich-profile", {
+        // 1. Try to get existing profile from Supabase
+        const res = await fetch(`/api/profile?userId=${session.user.id}`)
+        const existing = await res.json()
+
+        if (existing?.id) {
+          if (isMounted) {
+            setProfile(existing)
+            setLoading(false)
+          }
+          return
+        }
+
+        // 2. If not found, run enrichment
+        const enrichRes = await fetch(`/api/enrich-profile`, {
           method: "POST",
+          body: JSON.stringify({ userId: session.user.id }),
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ linkedinId: session.user.linkedinId }),
+        })
+        const enriched = await enrichRes.json()
+
+        // 3. Save to Supabase
+        await fetch(`/api/profile`, {
+          method: "POST",
+          body: JSON.stringify(enriched),
+          headers: { "Content-Type": "application/json" },
         })
 
-        const enriched = await res.json()
-
-        // Store in Supabase
-        await supabase.from("profiles").insert({
-          id: session.user.id,
-          ...enriched,
-        })
-
-        setProfile(enriched)
+        if (isMounted) {
+          setProfile(enriched)
+          setLoading(false)
+        }
       } catch (err) {
-        console.error("Enrichment failed", err)
-      } finally {
-        setLoading(false)
+        console.error("Profile load failed", err)
+        if (isMounted) setLoading(false)
       }
     }
 
-    fetchProfile()
-  }, [status, session])
+    loadProfile()
 
-  if (loading) {
-    return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-      </div>
-    )
-  }
-
-  if (!profile) {
-    return <p className="p-6">No profile found.</p>
-  }
+    return () => {
+      isMounted = false
+    }
+  }, [session])
 
   return (
-    <Card className="m-6">
-      <CardHeader>
-        <CardTitle>{profile.full_name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>{profile.headline}</p>
-        {/* render more fields as needed */}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center w-full p-6">
+      {/* Floating toolbar stays visible */}
+      <FloatingToolbar />
+
+      <Card className="w-full max-w-3xl mt-6">
+        <CardContent>
+          {loading ? (
+            <Skeleton className="w-full h-64" />
+          ) : profile ? (
+            <ResumePreview profile={profile} />
+          ) : (
+            <div className="text-center text-gray-500">
+              No profile data found.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

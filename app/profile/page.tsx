@@ -14,11 +14,12 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
 
   // Redirect if unauthenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push(`/auth/signin?callbackUrl=${encodeURIComponent("/profile")}`)
-    }
-  }, [status, router])
+useEffect(() => {
+  if (status === "unauthenticated") {
+    // Either send to root or a custom page
+    router.push("/")
+  }
+}, [status, router])
 
   // Load profile + enrich only when session is ready
   useEffect(() => {

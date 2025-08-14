@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import SignIn from "@/buttons/SignIn"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { GithubIcon, LinkedinIcon } from 'lucide-react'
 
@@ -14,12 +15,7 @@ export default function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Link href="/auth/signin">
-            <Button className="w-full">
-              <LinkedinIcon className="mr-2 h-5 w-5" />
-              Sign in with LinkedIn
-            </Button>
-          </Link>
+          <SignIn />
         </CardContent>
       </Card>
     </div>

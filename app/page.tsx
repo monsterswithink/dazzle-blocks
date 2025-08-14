@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/ui/button"
 import SignIn from "@/buttons/SignIn"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { GithubIcon, LinkedinIcon } from 'lucide-react'

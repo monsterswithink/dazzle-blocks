@@ -3,10 +3,10 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { FloatingToolbar } from "@/components/FloatingToolbar"
-import { ResumePreview } from "@/components/ResumePreview"
-import { Card, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
+import { ResumePreview } from "@/resume-blocks/ResumePreview"
+import { Card, CardContent } from "@/ui/card"
+import { Skeleton } from "@/ui/skeleton"
 
 interface EnrichedProfile {
   id: string

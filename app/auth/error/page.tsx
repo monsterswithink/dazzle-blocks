@@ -34,7 +34,7 @@ export default function AuthErrorPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Link href="/auth/signin">
+          <Link href="/profile">
             <Button className="w-full">
               Return to Sign In
             </Button>

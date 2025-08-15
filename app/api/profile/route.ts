@@ -1,98 +1,51 @@
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { supabase } from "@/lib/supabase"
-import type { Profile } from "@/types/profile"
+import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+
+async function getUserAndClient() {
+  const session = await auth();
+  if (!session) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  const supabase = createClient();
+  return { session, supabase };
+}
 
 export async function GET() {
-  const session = await auth()
+  const { error, session, supabase } = await getUserAndClient() as any;
+  if (error) return error;
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
+  const { data, error: dbError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", session.user.id)
+    .single();
 
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .single()
-
-    // PGRST116 means no rows found
-    if (error && error.code !== "PGRST116") {
-      throw new Error(error.message)
-    }
-
-    if (!data) {
-      return NextResponse.json({ message: "Profile not found" }, { status: 404 })
-    }
-
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error("Error fetching profile:", error.message)
-    return NextResponse.json(
-      { message: "Failed to fetch profile", error: error.message },
-      { status: 500 }
-    )
-  }
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
-export async function POST(request: Request) {
-  const session = await auth()
+export async function POST(req: Request) {
+  const { error, session, supabase } = await getUserAndClient() as any;
+  if (error) return error;
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
+  const body = await req.json();
+  const { error: dbError } = await supabase
+    .from("profiles")
+    .update(body)
+    .eq("id", session.user.id);
 
-  const profileData: Profile = await request.json()
-
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .insert({ ...profileData, user_id: session.user.id })
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return NextResponse.json(data, { status: 201 })
-  } catch (error: any) {
-    console.error("Error creating profile:", error.message)
-    return NextResponse.json(
-      { message: "Failed to create profile", error: error.message },
-      { status: 500 }
-    )
-  }
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }
 
-export async function PUT(request: Request) {
-  const session = await auth()
+export async function PUT(req: Request) {
+  const { error, session, supabase } = await getUserAndClient() as any;
+  if (error) return error;
 
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
+  const body = await req.json();
+  const { error: dbError } = await supabase
+    .from("profiles")
+    .upsert({ id: session.user.id, ...body }, { onConflict: "id" });
 
-  const profileData: Profile = await request.json()
-
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .update(profileData)
-      .eq("user_id", session.user.id)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error("Error updating profile:", error.message)
-    return NextResponse.json(
-      { message: "Failed to update profile", error: error.message },
-      { status: 500 }
-    )
-  }
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }

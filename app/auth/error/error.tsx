@@ -9,7 +9,7 @@ export default function AuthError() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 100 : prev + 5))
+      setProgress((prev) => (prev >= 100 ? 100 : prev + 3))
     }, 150)
     return () => clearInterval(timer)
   }, [])
@@ -23,7 +23,7 @@ export default function AuthError() {
         </h1>
         <p className="text-gray-500 dark:text-gray-400">
           Please wait while we process your request...
-        </p>
+      </p>
         <Progress value={progress} className="w-[300px]" />
       </div>
     </div>

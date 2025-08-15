@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
+import { ResumeEditor } from "@/resume-blocks/ResumeEditor"
 import { getResumeById } from "@/lib/resume-service"
 
 export default async function EditorPage() {

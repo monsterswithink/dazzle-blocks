@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Resume Editor",
   description: "A collaborative resume editor powered by Next.js and Velt.",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({

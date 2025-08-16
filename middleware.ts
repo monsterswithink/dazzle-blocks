@@ -1,39 +1,28 @@
-// middleware.ts
-import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
+import { NextResponse } from "next/server"
 
-export default auth({
-  callbacks: {
-    authorized({ req, token }) {
-      const pathname = req.nextUrl.pathname
+export default auth((req) => {
+  const { nextUrl } = req
+  const isAuthenticated = !!req.auth
 
-      // ✅ Always allow NextAuth internal API routes (OAuth callbacks)
-      if (pathname.startsWith("/api/auth")) return true
+  // Allow public paths
+  const publicPaths = ["/", "/api/auth", "/auth/error", "/_next", "/favicon.ico"]
+  const isPublicPath = publicPaths.some((path) => nextUrl.pathname.startsWith(path))
 
-      // ✅ Allow public routes (add more if needed)
-      const publicPaths = ["/", "/about", "/contact"]
-      if (publicPaths.includes(pathname)) return true
+  if (isPublicPath) {
+    return NextResponse.next()
+  }
 
-      // ✅ Require token for protected paths
-      return !!token
-    },
-  },
-})
-
-export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
-}
-
-// Optional: redirect root "/" to "/profile" if logged in
-export function middleware(req) {
-  const token = req.cookies.get("next-auth.session-token")?.value
-  const isRoot = req.nextUrl.pathname === "/"
-
-  if (isRoot && token) {
-    return NextResponse.redirect(new URL("/profile", req.url))
+  // Redirect unauthenticated users to sign-in
+  if (!isAuthenticated) {
+    const signInUrl = new URL("/", nextUrl.origin)
+    signInUrl.searchParams.set("callbackUrl", nextUrl.pathname)
+    return NextResponse.redirect(signInUrl)
   }
 
   return NextResponse.next()
+})
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

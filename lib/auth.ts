@@ -1,93 +1,63 @@
 import NextAuth from "next-auth"
 import LinkedIn from "next-auth/providers/linkedin"
-import { SupabaseAdapter } from "@auth/supabase-adapter"
-import { createClient } from "@supabase/supabase-js"
-import { NextResponse } from "next/server"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     LinkedIn({
-      clientId: process.env.LINKEDIN_CLIENT_ID,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+      clientId: process.env.LINKEDIN_CLIENT_ID!,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       authorization: {
-        params: { scope: "r_liteprofile email" },
+        params: {
+          scope: "r_liteprofile r_emailaddress",
+        },
       },
-      profile: (profile) => {
+      profile(profile) {
         return {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          vanityUrl: `https://www.linkedin.com/in/${profile.vanityName}`,
+          vanityUrl: profile.vanityName || null,
         }
       },
     }),
   ],
-  adapter: SupabaseAdapter({
-    url: process.env.SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    supabaseClient: createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!),
-  }),
   callbacks: {
-    async session({ session, user, token }) {
-      if (session?.user) {
-        session.user.id = user.id
-        if (token.vanityUrl) {
-          session.user.vanityUrl = token.vanityUrl as string
-        }
-      }
-      return session
-    },
-    async jwt({ token, user, account, profile }) {
-      if (user) {
-        token.id = user.id
+    async jwt({ token, account, profile }) {
+      if (account) {
+        token.accessToken = account.access_token
       }
       if (profile) {
-        const profileWithVanity = profile as any
-        if (profileWithVanity.vanityName) {
-          token.vanityUrl = `https://www.linkedin.com/in/${profileWithVanity.vanityName}`
-        }
+        token.vanityUrl = (profile as any).vanityName || null
       }
       return token
     },
-   authorized({ request, auth }) {
-  const { nextUrl } = request
-  const isAuthenticated = !!auth
-  const isOnDashboard = nextUrl.pathname.startsWith("/profile")
-
-  if (isOnDashboard) {
-    if (isAuthenticated) return true
-
-    // Redirect to sign-in, carrying the full current URL as callbackUrl
-    return NextResponse.redirect(
-      new URL(`/auth/signin?callbackUrl=${encodeURIComponent(nextUrl.href)}`, request.url)
-    )
-  } else if (isAuthenticated) {
-    return NextResponse.redirect(
-      new URL("/profile", request.url)
-    )
-  }
-
-  return true
-}
+    async session({ session, token }) {
+      return {
+        ...session,
+        accessToken: token.accessToken,
+        user: {
+          ...session.user,
+          vanityUrl: token.vanityUrl as string,
+        },
+      }
+    },
   },
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/",
     error: "/auth/error",
-    profile: "/profile",
-    resume: "/resume"
   },
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
 })
 
 declare module "next-auth" {
   interface Session {
+    accessToken?: string
     user: {
       id: string
-      vanityUrl: string
+      vanityUrl?: string
     } & {
       name?: string | null
       email?: string | null

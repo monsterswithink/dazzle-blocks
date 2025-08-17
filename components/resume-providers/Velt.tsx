@@ -2,30 +2,36 @@
 
 import type React from "react"
 import { VeltProvider as VeltSDKProvider, useIdentify } from "@veltdev/react"
-import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 
 interface VeltProviderProps {
   children: React.ReactNode
+  documentId: string
 }
 
 function VeltIdentifyUser() {
   const { data: session } = useSession()
 
-  // Note: The useIdentify hook will only be called once,
-  // when the user's session is first available.
   useIdentify({
-    userId: session?.user?.email || session?.user?.id || "",
+    userId: session?.user?.email || session?.user?.id || "anonymous",
     name: session?.user?.name || "Anonymous",
-    avatar: session?.user?.image || "/placeholder-user.png",
+    email: session?.user?.email || "",
+    photoUrl: session?.user?.image || "/placeholder-user.png",
   })
 
   return null
 }
 
-export function VeltProvider({ children }: VeltProviderProps) {
+export function VeltProvider({ children, documentId }: VeltProviderProps) {
+  const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
+
+  if (!apiKey) {
+    console.warn("NEXT_PUBLIC_VELT_PUBLIC_KEY is not set")
+    return <>{children}</>
+  }
+
   return (
-    <VeltSDKProvider apiKey={process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY!}>
+    <VeltSDKProvider apiKey={apiKey} documentId={documentId}>
       <VeltIdentifyUser />
       {children}
     </VeltSDKProvider>

@@ -1,7 +1,7 @@
 "use client"
 
 import { Loader2 } from "lucide-react"
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/ui/progress"
 import { useEffect, useState } from "react"
 
 export default function Loading() {

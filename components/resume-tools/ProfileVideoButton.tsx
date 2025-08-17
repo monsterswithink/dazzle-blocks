@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Video, PlayCircle, Loader2 } from "lucide-react"
 import { useVeltClient } from "@veltdev/react"
 import { toast } from "sonner"
+import { VeltRecorderTool } from "@veltdev/react"
 
 export function ProfileVideoButton() {
   const { client: veltClient } = useVeltClient()
@@ -78,20 +79,22 @@ export function ProfileVideoButton() {
   }
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" size="sm" onClick={handleRecordVideo}>
-        <Video className="w-4 h-4 mr-2" /> Record Video
-      </Button>
-      {isPlaybackAvailable && (
-        <Button onClick={handlePlayback} disabled={isLoading || isRecording} variant="outline">
-          {isLoading && !isRecording ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <PlayCircle className="mr-2 h-4 w-4" />
-          )}
-          Play Recording
+    <VeltRecorderTool>
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={handleRecordVideo}>
+          <Video className="w-4 h-4 mr-2" /> Record Video
         </Button>
-      )}
-    </div>
+        {isPlaybackAvailable && (
+          <Button onClick={handlePlayback} disabled={isLoading || isRecording} variant="outline">
+            {isLoading && !isRecording ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <PlayCircle className="mr-2 h-4 w-4" />
+            )}
+            Play Recording
+          </Button>
+        )}
+      </div>
+    </VeltRecorderTool>
   )
 }

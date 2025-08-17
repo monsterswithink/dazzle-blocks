@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { useVeltClient, useSetDocumentId } from "@veltdev/react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -21,26 +22,34 @@ import { SharePopover } from "@/components/resume-tools/SharePopover"
 import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
 import { EditableText } from "@/components/resume-blocks/EditableText"
 import { Skills } from "@/components/resume-blocks/Skills"
-import { VeltComments, VeltRecorderTool, VeltRecorderControlPanel, VeltViewAnalytics, VeltPresence, useVeltClient } from "@veltdev/react"
+import {
+  VeltRecorderTool,
+  VeltRecorderControlPanel,
+  VeltViewAnalytics,
+  VeltPresence,
+  VeltComments,
+} from "@veltdev/react"
 import { toast } from "sonner"
+import { getResumeById, updateResume } from "@/lib/resume-service"
 
 interface ResumeEditorProps {
   resumeId: string
-  initialResumeData: any
 }
 
-export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps) {
+export function ResumeEditor({ resumeId }: ResumeEditorProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [resumeData, setResumeData] = useState<any>(initialResumeData)
-  const [loading, setLoading] = useState(false) // Initial data is already loaded
+  const [resumeData, setResumeData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState("modern")
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const { client: veltClient } = useVeltClient()
+  useSetDocumentId(resumeId)
 
   const editor = useEditor({
     extensions: [
@@ -61,14 +70,33 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
   })
 
   useEffect(() => {
-    if (veltClient && resumeData) {
-      veltClient.setDocumentId(resumeId)
-      // User identification is handled in components/resume-providers/Velt.tsx
+    const fetchResume = async () => {
+      if (status === "authenticated") {
+        try {
+          setLoading(true)
+          setError(null)
+          const data = await getResumeById(resumeId)
+          if (!data) {
+            throw new Error("Resume not found")
+          }
+          setResumeData(data)
+        } catch (err: any) {
+          setError(err.message)
+          toast.error("Failed to load resume", {
+            description: err.message,
+          })
+        } finally {
+          setLoading(false)
+        }
+      } else if (status === "unauthenticated") {
+        router.push("/")
+      }
     }
-  }, [veltClient, resumeId, resumeData])
+
+    fetchResume()
+  }, [resumeId, session, status, router])
 
   useEffect(() => {
-    // Update editor content when resumeData.about.description changes
     if (editor && resumeData?.about?.description !== editor.getHTML()) {
       editor.commands.setContent(resumeData?.about?.description || "", false)
     }
@@ -78,7 +106,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
     setResumeData((prev: any) => ({
       ...prev,
       experience: [
-        ...prev.experience,
+        ...(prev.experience || []),
         {
           id: Date.now(),
           title: "New Position",
@@ -93,7 +121,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
   const handleRemoveExperience = (id: number) => {
     setResumeData((prev: any) => ({
       ...prev,
-      experience: prev.experience.filter((exp: any) => exp.id !== id),
+      experience: (prev.experience || []).filter((exp: any) => exp.id !== id),
     }))
   }
 
@@ -101,7 +129,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
     setResumeData((prev: any) => ({
       ...prev,
       education: [
-        ...prev.education,
+        ...(prev.education || []),
         {
           id: Date.now(),
           degree: "New Degree",
@@ -116,48 +144,44 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
   const handleRemoveEducation = (id: number) => {
     setResumeData((prev: any) => ({
       ...prev,
-      education: prev.education.filter((edu: any) => edu.id !== id),
+      education: (prev.education || []).filter((edu: any) => edu.id !== id),
     }))
   }
 
   const handleAddSkill = () => {
     setResumeData((prev: any) => ({
       ...prev,
-      skills: [...prev.skills, { id: Date.now(), name: "New Skill", level: 3 }],
+      skills: [...(prev.skills || []), { id: Date.now(), name: "New Skill", level: 3 }],
     }))
   }
 
   const handleRemoveSkill = (id: number) => {
     setResumeData((prev: any) => ({
       ...prev,
-      skills: prev.skills.filter((skill: any) => skill.id !== id),
+      skills: (prev.skills || []).filter((skill: any) => skill.id !== id),
     }))
   }
 
   const handleSave = async () => {
-    setIsEditing(false)
+    if (!resumeData) return
+
+    setIsSaving(true)
     try {
-      const response = await fetch(`/api/resume/${resumeId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(resumeData),
-      })
-      if (!response.ok) {
-        throw new Error("Failed to save resume")
-      }
+      await updateResume(resumeId, resumeData)
+      setIsEditing(false)
       toast.success("Resume saved successfully!")
     } catch (error: any) {
       console.error("Error saving resume:", error)
-      toast.error("Failed to save resume.", {
+      toast.error("Failed to save resume", {
         description: error.message || "An unknown error occurred.",
       })
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const handleDownload = () => {
-    toast.info("Download PDF functionality coming soon!")
+    setIsSharePopoverOpen(true)
   }
 
   const handleView = () => {
@@ -226,7 +250,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
             <Eye className="w-4 h-4 mr-2" /> View
           </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="w-4 h-4 mr-2" /> Download
+            <Download className="w-4 h-4 mr-2" /> Share
           </Button>
           <ProfileVideoButton />
           <Button
@@ -238,8 +262,9 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
               }
             }}
             size="sm"
+            disabled={isSaving}
           >
-            {isEditing ? "Save" : "Edit"}
+            {isSaving ? "Saving..." : isEditing ? "Save" : "Edit"}
           </Button>
         </div>
       </header>
@@ -256,7 +281,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="name">Name</Label>
                     <EditableText
                       id="name"
-                      value={resumeData.personal.name}
+                      value={resumeData.personal?.name || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -271,7 +296,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="title">Title</Label>
                     <EditableText
                       id="title"
-                      value={resumeData.personal.title}
+                      value={resumeData.personal?.title || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -285,7 +310,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="email">Email</Label>
                     <EditableText
                       id="email"
-                      value={resumeData.personal.email}
+                      value={resumeData.personal?.email || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -299,7 +324,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="phone">Phone</Label>
                     <EditableText
                       id="phone"
-                      value={resumeData.personal.phone}
+                      value={resumeData.personal?.phone || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -313,7 +338,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="linkedin">LinkedIn</Label>
                     <EditableText
                       id="linkedin"
-                      value={resumeData.personal.linkedin}
+                      value={resumeData.personal?.linkedin || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -327,7 +352,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     <Label htmlFor="github">GitHub</Label>
                     <EditableText
                       id="github"
-                      value={resumeData.personal.github}
+                      value={resumeData.personal?.github || ""}
                       onChange={(e) =>
                         setResumeData((prev: any) => ({
                           ...prev,
@@ -350,7 +375,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                   ) : (
                     <div
                       className="prose dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: resumeData.about.description }}
+                      dangerouslySetInnerHTML={{ __html: resumeData.about?.description || "" }}
                     />
                   )}
                 </CardContent>
@@ -372,17 +397,17 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     </CollapsibleTrigger>
                   </CardHeader>
                   <CollapsibleContent className="space-y-4 p-4 pt-0">
-                    {resumeData.experience.map((exp: any, index: number) => (
+                    {(resumeData.experience || []).map((exp: any, index: number) => (
                       <div key={exp.id} className="border-b pb-4 last:border-b-0 last:pb-0">
                         <div>
                           <Label htmlFor={`exp-title-${index}`}>Title</Label>
                           <EditableText
                             id={`exp-title-${index}`}
-                            value={exp.title}
+                            value={exp.title || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                experience: prev.experience.map((item: any) =>
+                                experience: (prev.experience || []).map((item: any) =>
                                   item.id === exp.id ? { ...item, title: e.target.value } : item,
                                 ),
                               }))
@@ -395,11 +420,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           <Label htmlFor={`exp-company-${index}`}>Company</Label>
                           <EditableText
                             id={`exp-company-${index}`}
-                            value={exp.company}
+                            value={exp.company || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                experience: prev.experience.map((item: any) =>
+                                experience: (prev.experience || []).map((item: any) =>
                                   item.id === exp.id ? { ...item, company: e.target.value } : item,
                                 ),
                               }))
@@ -411,11 +436,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           <Label htmlFor={`exp-years-${index}`}>Years</Label>
                           <EditableText
                             id={`exp-years-${index}`}
-                            value={exp.years}
+                            value={exp.years || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                experience: prev.experience.map((item: any) =>
+                                experience: (prev.experience || []).map((item: any) =>
                                   item.id === exp.id ? { ...item, years: e.target.value } : item,
                                 ),
                               }))
@@ -428,11 +453,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           {isEditing ? (
                             <Textarea
                               id={`exp-description-${index}`}
-                              value={exp.description.replace(/<\\?\/ul>|<\\?\/li>/g, "")} // Fixed regex escaping
+                              value={(exp.description || "").replace(/<\/?ul>|<\/?li>/g, "")}
                               onChange={(e) =>
                                 setResumeData((prev: any) => ({
                                   ...prev,
-                                  experience: prev.experience.map((item: any) =>
+                                  experience: (prev.experience || []).map((item: any) =>
                                     item.id === exp.id
                                       ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
                                       : item,
@@ -444,7 +469,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           ) : (
                             <div
                               className="prose dark:prose-invert max-w-none text-sm"
-                              dangerouslySetInnerHTML={{ __html: exp.description }}
+                              dangerouslySetInnerHTML={{ __html: exp.description || "" }}
                             />
                           )}
                         </div>
@@ -490,17 +515,17 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                     </CollapsibleTrigger>
                   </CardHeader>
                   <CollapsibleContent className="space-y-4 p-4 pt-0">
-                    {resumeData.education.map((edu: any, index: number) => (
+                    {(resumeData.education || []).map((edu: any, index: number) => (
                       <div key={edu.id} className="border-b pb-4 last:border-b-0 last:pb-0">
                         <div>
                           <Label htmlFor={`edu-degree-${index}`}>Degree</Label>
                           <EditableText
                             id={`edu-degree-${index}`}
-                            value={edu.degree}
+                            value={edu.degree || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                education: prev.education.map((item: any) =>
+                                education: (prev.education || []).map((item: any) =>
                                   item.id === edu.id ? { ...item, degree: e.target.value } : item,
                                 ),
                               }))
@@ -513,11 +538,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           <Label htmlFor={`edu-university-${index}`}>University</Label>
                           <EditableText
                             id={`edu-university-${index}`}
-                            value={edu.university}
+                            value={edu.university || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                education: prev.education.map((item: any) =>
+                                education: (prev.education || []).map((item: any) =>
                                   item.id === edu.id ? { ...item, university: e.target.value } : item,
                                 ),
                               }))
@@ -529,11 +554,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           <Label htmlFor={`edu-years-${index}`}>Years</Label>
                           <EditableText
                             id={`edu-years-${index}`}
-                            value={edu.years}
+                            value={edu.years || ""}
                             onChange={(e) =>
                               setResumeData((prev: any) => ({
                                 ...prev,
-                                education: prev.education.map((item: any) =>
+                                education: (prev.education || []).map((item: any) =>
                                   item.id === edu.id ? { ...item, years: e.target.value } : item,
                                 ),
                               }))
@@ -546,11 +571,11 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           {isEditing ? (
                             <Textarea
                               id={`edu-description-${index}`}
-                              value={edu.description.replace(/<\\?\/ul>|<\\?\/li>/g, "")} // Fixed regex escaping
+                              value={(edu.description || "").replace(/<\/?ul>|<\/?li>/g, "")}
                               onChange={(e) =>
                                 setResumeData((prev: any) => ({
                                   ...prev,
-                                  education: prev.education.map((item: any) =>
+                                  education: (prev.education || []).map((item: any) =>
                                     item.id === edu.id
                                       ? { ...item, description: `<ul><li>${e.target.value}</li></ul>` }
                                       : item,
@@ -562,7 +587,7 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                           ) : (
                             <div
                               className="prose dark:prose-invert max-w-none text-sm"
-                              dangerouslySetInnerHTML={{ __html: edu.description }}
+                              dangerouslySetInnerHTML={{ __html: edu.description || "" }}
                             />
                           )}
                         </div>
@@ -609,12 +634,12 @@ export function ResumeEditor({ resumeId, initialResumeData }: ResumeEditorProps)
                   </CardHeader>
                   <CollapsibleContent className="space-y-4 p-4 pt-0">
                     <Skills
-                      skills={resumeData.skills}
+                      skills={resumeData.skills || []}
                       isEditing={isEditing}
                       onSkillChange={(id, newName, newLevel) =>
                         setResumeData((prev: any) => ({
                           ...prev,
-                          skills: prev.skills.map((skill: any) =>
+                          skills: (prev.skills || []).map((skill: any) =>
                             skill.id === id ? { ...skill, name: newName, level: newLevel } : skill,
                           ),
                         }))

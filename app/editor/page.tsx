@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { RoomProvider, useStorage, useMutation } from "@/lib/liveblocks"
+import { RoomProvider, useStorage, useMutation } from "@/resume-providers/VeltProvider"
 import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import type { EnrichedProfile, ResumeTheme } from "@/types/profile"

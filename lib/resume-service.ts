@@ -6,7 +6,7 @@ export async function saveResumeToSupabase(profileData: EnrichedProfile): Promis
     const processedData = transformProfileToResume(profileData)
 
     const { data, error } = await supabase
-      .from("resumes")
+      .from("resume")
       .insert({
         id: profileData.public_identifier,
         user_id: profileData.personal_emails?.[0] || "anonymous",
@@ -27,7 +27,7 @@ export async function saveResumeToSupabase(profileData: EnrichedProfile): Promis
 
 export async function getResumeById(id: string): Promise<ProcessedProfile | null> {
   try {
-    const { data, error } = await supabase.from("resumes").select("content").eq("id", id).single()
+    const { data, error } = await supabase.from("resume").select("content").eq("id", id).single()
 
     if (error) throw error
     return data?.content || null

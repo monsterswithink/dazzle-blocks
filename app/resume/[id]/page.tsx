@@ -1,6 +1,6 @@
 import { Suspense } from "react"
-import { ResumeEditor } from "@/components/resume-blocks/ResumeEditor"
-import { VeltProvider } from "@/components/resume-providers/Velt"
+import { ResumeEditor } from "@//resume-blocks/ResumeEditor"
+import { VeltProvider } from "@//resume-providers/Velt"
 import { Loader2 } from "lucide-react"
 
 export default function ResumePage({ params }: { params: { id: string } }) {

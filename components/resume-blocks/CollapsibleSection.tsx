@@ -3,9 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle } from "@/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible"
+import { Button } from "@/ui/button"
 import { ChevronDown, Plus, Minus } from "lucide-react"
 
 interface CollapsibleSectionProps {

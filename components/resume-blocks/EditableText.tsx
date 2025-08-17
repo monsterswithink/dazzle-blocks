@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { Input } from "@/components/ui/input"
+import { Input } from "@/ui/input"
 import { cn } from "@/lib/utils"
 
 interface EditableTextProps extends React.InputHTMLAttributes<HTMLInputElement> {

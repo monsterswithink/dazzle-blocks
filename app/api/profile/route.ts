@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
 async function getUserAndClient() {

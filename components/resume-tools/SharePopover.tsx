@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
+import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover"
 import { QRCodeSVG } from "qrcode.react"
 import { Share2, Copy, Printer, Download, Check } from "lucide-react"
 import { toast } from "sonner"

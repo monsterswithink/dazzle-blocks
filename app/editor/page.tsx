@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { RoomProvider, useStorage, useMutation } from "@/lib/liveblocks"
-import { FloatingToolbar } from "./components/floating-toolbar"
+import { FloatingToolbar } from "./components/floating-oolbar"
 import { ResumeDisplay } from "./components/resume-display"
 import type { EnrichedProfile, ResumeTheme } from "./types/profile"
 

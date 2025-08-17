@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { Inter } from 'next/font/google'
-import "./globals.css"
+import "#styles"
 import { Providers } from "./providers"
 import { cn } from "@/lib/utils"
 
@@ -27,3 +27,6 @@ export default function RootLayout({
     </html>
   )
 }
+
+
+import './globals.css'

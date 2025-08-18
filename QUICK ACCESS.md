@@ -8,4 +8,4 @@
 
 → [Components](https://github.com/monsterswithink/dazzle-blocks/tree/main/components)
 
-→ [Vwrcel Deploymets]
+→ [Vercel](https://vercel.com/monstersink/v0-liveblocks-resume-editor/deployments}

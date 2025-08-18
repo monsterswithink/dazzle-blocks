@@ -1,5 +1,11 @@
 → [Jules](https://jules.google.com/task/8858113790775687107/code/components/resume-blocks/ResumeEditor.tsx)
+
 → [V0 Project](https://v0.app/chat/fork-of-liveblocks-resume-editor-TWQGrbtVT4v)
+
 → [API routes](https://github.com/monsterswithink/dazzle-blocks/tree/main/app/api)
+
 → [App folder](https://github.com/monsterswithink/dazzle-blocks/tree/main/app)
+
 → [Components](https://github.com/monsterswithink/dazzle-blocks/tree/main/components)
+
+→ [Vwrcel Deploymets]

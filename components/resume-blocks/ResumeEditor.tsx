@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useVeltClient, useSetDocumentId } from "@veltdev/react"
+import { useLiveState } from "@veltdev/react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -39,7 +39,7 @@ interface ResumeEditorProps {
 export function ResumeEditor({ resumeId }: ResumeEditorProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [resumeData, setResumeData] = useState<any>(null)
+  const [resumeData, setResumeData] = useLiveState<any | null>(`resume-${resumeId}`, null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState<string | null>(null)
@@ -47,9 +47,6 @@ export function ResumeEditor({ resumeId }: ResumeEditorProps) {
   const [selectedTheme, setSelectedTheme] = useState("modern")
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-
-  const { client: veltClient } = useVeltClient()
-  useSetDocumentId(resumeId)
 
   const editor = useEditor({
     extensions: [
@@ -101,6 +98,20 @@ export function ResumeEditor({ resumeId }: ResumeEditorProps) {
       editor.commands.setContent(resumeData?.about?.description || "", false)
     }
   }, [resumeData?.about?.description, editor])
+
+  useEffect(() => {
+    // When the component first loads, resumeData will be null from useLiveState.
+    // We don't want to save this null state to the database.
+    // We also don't want to save the initial data that is fetched from the database.
+    // The loading state will be true until the initial data is fetched.
+    if (!resumeData || loading) return
+
+    const debounceSave = setTimeout(() => {
+      updateResume(resumeId, resumeData)
+    }, 1000) // 1 second debounce
+
+    return () => clearTimeout(debounceSave)
+  }, [resumeData, resumeId, loading])
 
   const handleAddExperience = () => {
     setResumeData((prev: any) => ({
@@ -163,21 +174,10 @@ export function ResumeEditor({ resumeId }: ResumeEditorProps) {
   }
 
   const handleSave = async () => {
-    if (!resumeData) return
-
-    setIsSaving(true)
-    try {
-      await updateResume(resumeId, resumeData)
-      setIsEditing(false)
-      toast.success("Resume saved successfully!")
-    } catch (error: any) {
-      console.error("Error saving resume:", error)
-      toast.error("Failed to save resume", {
-        description: error.message || "An unknown error occurred.",
-      })
-    } finally {
-      setIsSaving(false)
-    }
+    // The resume data is now saved automatically via the useEffect hook.
+    // This function is now only responsible for toggling the editing state.
+    setIsEditing(false)
+    toast.success("Resume edits are saved automatically!")
   }
 
   const handleDownload = () => {
@@ -262,9 +262,8 @@ export function ResumeEditor({ resumeId }: ResumeEditorProps) {
               }
             }}
             size="sm"
-            disabled={isSaving}
           >
-            {isSaving ? "Saving..." : isEditing ? "Save" : "Edit"}
+            {isEditing ? "Save" : "Edit"}
           </Button>
         </div>
       </header>

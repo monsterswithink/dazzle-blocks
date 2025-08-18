@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 
 interface VeltProviderProps {
   children: React.ReactNode
-  documentId: string
+  documentId?: string
 }
 
 function VeltIdentifyUser() {

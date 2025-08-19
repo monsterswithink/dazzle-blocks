@@ -18,7 +18,7 @@
         "name": "next"
       }
     ],
-     "baseUrl": ".",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@/app/*": ["./app/*"],
@@ -31,7 +31,6 @@
       "@/lib/*": ["./lib/*"],
       "@/hooks/*": ["./hooks/*"],
       "@/public/*": ["./public/*"],
-      #asdadwauth": ["./lib/auth.ts"],
       "@/scripts/*": ["./scripts/*"],
       "@/resume-providers/*": ["./components/resume-providers/*"],
       "@/utils/*": ["./utils/*"],

@@ -9,7 +9,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@auth/core": "latest",
     "@hookform/resolvers": "^3.3.4",
     "@next/third-parties": "^14.2.5",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -54,14 +53,12 @@
     "html2pdf.js": "latest",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.454.0",
-    "next": "15.2.4",
-    "next-auth": "latest",
-    "next-themes": "latest",
+    "next-auth": "^5.0.0-beta.29",
+    "next-themes": "^0.4.6",
     "nodemailer": "latest",
     "qrcode.react": "latest",
-    "react": "^19",
+    "react": "19.1.1",
     "react-day-picker": "^8.10.0",
-    "react-dom": "^19",
     "react-hook-form": "^7.49.3",
     "react-resizable-panels": "latest",
     "recharts": "^2.12.2",
@@ -81,5 +78,9 @@
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
-  }
+  },
+  "trustedDependencies": [
+    "core-js",
+    "unrs-resolver"
+  ]
 }

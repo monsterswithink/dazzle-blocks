@@ -17,10 +17,12 @@ export type DateFormat = "MMM YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD" | "relative"
 // Core experience types
 // ----------------------
 export interface Experience {
-  title: string
-  company: string
-  years: string
-  description: string
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  company: string;
+  years: string;
+  description: string;
 }
 
 export interface ProcessedExperience extends Omit<Experience, "years"> {

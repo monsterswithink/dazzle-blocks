@@ -1,7 +1,13 @@
 "use client"
 
 import type React from "react"
-import { VeltProvider as VeltSDKProvider, useIdentify } from "@veltdev/react"
+import {
+  VeltProvider as VeltSDKProvider,
+  useIdentify,
+  RoomProvider,
+  useStorage,
+  useMutation,
+} from "@veltdev/react"
 import { useSession } from "next-auth/react"
 
 interface VeltProviderProps {
@@ -37,3 +43,6 @@ export function VeltProvider({ children, documentId }: VeltProviderProps) {
     </VeltSDKProvider>
   )
 }
+
+// re-export hooks and providers so app/editor/page.tsx compiles
+export { RoomProvider, useStorage, useMutation }

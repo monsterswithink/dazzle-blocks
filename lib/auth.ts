@@ -16,10 +16,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         params: { projection: "(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams),vanityName)" },
       },
       async profile(profile, tokens) {
+        const emailResponse = await fetch(
+          "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+          {
+            headers: {
+              Authorization: `Bearer ${tokens.access_token}`,
+            },
+          }
+        )
+        const emailData = await emailResponse.json()
         return {
           id: profile.id,
           name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
-          email: null, // Placeholder, will be fetched separately
+          email: emailData?.elements?.[0]?.["handle~"]?.emailAddress,
           image: profile.profilePicture?.["displayImage~"]?.elements?.[0]?.identifiers?.[0]?.identifier,
           vanityUrl: profile.vanityName,
         }

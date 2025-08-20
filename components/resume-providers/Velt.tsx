@@ -4,15 +4,14 @@ import type React from "react"
 import {
   VeltProvider as VeltSDKProvider,
   useIdentify,
-  RoomProvider,
-  useStorage,
-  useMutation,
+  useLiveState,
 } from "@veltdev/react"
 import { useSession } from "next-auth/react"
 
 interface VeltProviderProps {
   children: React.ReactNode
   documentId?: string
+  dataProviders?: any
 }
 
 function VeltIdentifyUser() {
@@ -28,7 +27,7 @@ function VeltIdentifyUser() {
   return null
 }
 
-export function VeltProvider({ children, documentId }: VeltProviderProps) {
+export function VeltProvider({ children, documentId, dataProviders }: VeltProviderProps) {
   const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
 
   if (!apiKey) {
@@ -37,12 +36,11 @@ export function VeltProvider({ children, documentId }: VeltProviderProps) {
   }
 
   return (
-    <VeltSDKProvider apiKey={apiKey} documentId={documentId}>
+    <VeltSDKProvider apiKey={apiKey} documentId={documentId} dataProviders={dataProviders}>
       <VeltIdentifyUser />
       {children}
     </VeltSDKProvider>
   )
 }
 
-// re-export hooks and providers so app/editor/page.tsx compiles
-export { RoomProvider, useStorage, useMutation }
+export { useLiveState }

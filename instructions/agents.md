@@ -2,6 +2,9 @@
 
 **🧠 Updated Full AI Handoff Prompt — Velt SDK + TipTap + Supabase + LinkedIn Sync**
 
+[VELT DOCS]:
+refer to `instructions/velt-docs/`
+
 # **[PROJECT OVERVIEW]:**
 
 Create a Next.js 15+ App Router resume editor using Velt SDK + TipTap, integrated with Supabase for authentication/session management.

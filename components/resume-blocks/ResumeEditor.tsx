@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useLiveState } from "@veltdev/react"
+import { useLiveState } from "@/components/resume-providers/Velt"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -30,7 +30,6 @@ import {
   VeltComments,
 } from "@veltdev/react"
 import { toast } from "sonner"
-import { getResumeById, updateResume } from "@/lib/resume-service"
 
 interface ResumeEditorProps {
   resumeId: string
@@ -67,51 +66,19 @@ export function ResumeEditor({ resumeId }: ResumeEditorProps) {
   })
 
   useEffect(() => {
-    const fetchResume = async () => {
-      if (status === "authenticated") {
-        try {
-          setLoading(true)
-          setError(null)
-          const data = await getResumeById(resumeId)
-          if (!data) {
-            throw new Error("Resume not found")
-          }
-          setResumeData(data)
-        } catch (err: any) {
-          setError(err.message)
-          toast.error("Failed to load resume", {
-            description: err.message,
-          })
-        } finally {
-          setLoading(false)
-        }
-      } else if (status === "unauthenticated") {
-        router.push("/")
-      }
+    if (status === "unauthenticated") {
+      router.push("/")
     }
-
-    fetchResume()
-  }, [resumeId, session, status, router])
+    if (resumeData) {
+      setLoading(false)
+    }
+  }, [resumeData, status, router])
 
   useEffect(() => {
     if (editor && resumeData?.about?.description !== editor.getHTML()) {
       editor.commands.setContent(resumeData?.about?.description || "", false)
     }
   }, [resumeData?.about?.description, editor])
-
-  useEffect(() => {
-    // When the component first loads, resumeData will be null from useLiveState.
-    // We don't want to save this null state to the database.
-    // We also don't want to save the initial data that is fetched from the database.
-    // The loading state will be true until the initial data is fetched.
-    if (!resumeData || loading) return
-
-    const debounceSave = setTimeout(() => {
-      updateResume(resumeId, resumeData)
-    }, 1000) // 1 second debounce
-
-    return () => clearTimeout(debounceSave)
-  }, [resumeData, resumeId, loading])
 
   const handleAddExperience = () => {
     setResumeData((prev: any) => ({

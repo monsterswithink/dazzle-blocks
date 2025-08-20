@@ -27,40 +27,6 @@ export async function saveResumeToSupabase(
   }
 }
 
-export async function getResumeById(
-  id: string
-): Promise<ProcessedProfile | null> {
-  try {
-    const { data, error } = await supabase
-      .from("resumes")
-      .select("content")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-    return data?.content || null;
-  } catch (error) {
-    console.error("Error fetching resume:", error);
-    return null;
-  }
-}
-
-export async function updateResume(id: string, resumeData: any): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from("resumes")
-      .update({
-        content: resumeData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
-
-    if (error) throw error;
-  } catch (error) {
-    console.error("Error updating resume:", error);
-    throw error;
-  }
-}
 
 function transformProfileToResume(profile: EnrichedProfile): ProcessedProfile {
   return {
@@ -150,8 +116,4 @@ function calculateTotalExperience(experience: any[]): string {
 // Backward compatibility functions
 export async function createResume(data: any) {
   return saveResumeToSupabase(data);
-}
-
-export async function fetchResume(id: string) {
-  return getResumeById(id);
 }

@@ -8,16 +8,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "r_liteprofile email",
+          scope: "r_liteprofile r_emailaddress r_basicprofile",
         },
       },
-      profile(profile) {
+      userinfo: {
+        url: "https://api.linkedin.com/v2/me",
+        params: { projection: "(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams),vanityName)" },
+      },
+      async profile(profile, tokens) {
         return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          vanityUrl: profile.vanityName || null,
+          id: profile.id,
+          name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
+          email: null, // Placeholder, will be fetched separately
+          image: profile.profilePicture?.["displayImage~"]?.elements?.[0]?.identifiers?.[0]?.identifier,
+          vanityUrl: profile.vanityName,
         }
       },
     }),

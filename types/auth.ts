@@ -6,3 +6,4 @@ export interface AuthUser {
   avatarUrl?: string;
   vanityUrl?: string;   // LinkedIn vanity URL
   occupation?: string;
+}

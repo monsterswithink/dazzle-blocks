@@ -1,4 +1,4 @@
-# GPT
+# AGENTS INSTRUCTIONS
 
 **🧠 Updated Full AI Handoff Prompt — Velt SDK + TipTap + Supabase + LinkedIn Sync**
 

@@ -7,6 +7,7 @@ import {
   useLiveState,
 } from "@veltdev/react";
 import { useSession } from "next-auth/react";
+import type { AuthUser } from "@/types/auth";
 
 interface VeltProviderProps {
   children: React.ReactNode;
@@ -14,38 +15,21 @@ interface VeltProviderProps {
   dataProviders?: any;
 }
 
-// Child component handles user identification with JWT
-function VeltIdentifyUser() {
+function VeltUser() {
   const { data: session } = useSession();
 
-  // Fetch Velt JWT token from your API
-  async function fetchVeltJWTToken(userId: string) {
-    const res = await fetch("/api/velt/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch Velt JWT token");
-    return res.json(); // { authToken: string }
-  }
-
   React.useEffect(() => {
-    if (!session?.user) return;
-
-    const identifyUser = async () => {
-      const userId = session.user.id;
-      const { authToken } = await fetchVeltJWTToken(userId);
-
+    if (session?.user) {
+      const user = session.user as AuthUser;
       useIdentify({
-        userId,
-        name: session.user.name ?? undefined,
-        email: session.user.email ?? undefined,
-        photoUrl: session.user.image ?? "/placeholder-user.png",
-      }, { authToken });
-    };
-
-    identifyUser().catch(console.error);
+        uid: user.id,
+        displayName: user.name || undefined,
+        email: user.email || undefined,
+        photoURL: user.avatarUrl || undefined,
+        organizationId: undefined,
+        colorCode: undefined,
+      });
+    }
   }, [session]);
 
   return null;
@@ -61,7 +45,7 @@ export function VeltProvider({ children, documentId, dataProviders }: VeltProvid
 
   return (
     <VeltSDKProvider apiKey={apiKey} documentId={documentId} dataProviders={dataProviders}>
-      <VeltIdentifyUser />
+      <VeltUser />
       {children}
     </VeltSDKProvider>
   );

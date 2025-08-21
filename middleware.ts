@@ -20,6 +20,11 @@ export default auth((req) => {
     return NextResponse.redirect(signInUrl)
   }
 
+  // Redirect authenticated users from the root to the profile page
+  if (nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/profile", nextUrl.origin))
+  }
+
   return NextResponse.next()
 })
 

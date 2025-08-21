@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/ui/button"
+import { Button } from "@/components/ui/button"
 import { Linkedin, Loader2 } from "lucide-react"
 import { signIn, useSession } from "next-auth/react"
 import { useState } from "react"
@@ -14,7 +14,7 @@ export default function SignIn() {
     setIsLoading(true)
     try {
       await signIn("linkedin", {
-        callbackUrl: "https://dazzle-one.vercel.app/api/auth/callback/linkedin",
+        callbackUrl: "/profile",
         redirect: true,
       })
     } catch (error) {

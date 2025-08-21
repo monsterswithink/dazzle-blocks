@@ -1,9 +1,13 @@
 "use client"
 
 import React from "react"
-import { VeltProvider as VeltSDKProvider, useIdentify, useLiveState } from "@veltdev/react"
+import {
+  VeltProvider as VeltSDKProvider,
+  useIdentify,
+  useLiveState,
+} from "@veltdev/react"
 import { useSession } from "next-auth/react"
-import type { AuthUser } from "@/types/AuthUser"
+import type { AuthUser } from "@/types/AuthUser"  // 👈 import your type
 
 interface VeltProviderProps {
   children: React.ReactNode
@@ -11,11 +15,9 @@ interface VeltProviderProps {
   dataProviders?: any
 }
 
-// Handles user identification with JWT
 function VeltIdentifyUser() {
   const { data: session } = useSession()
   const identify = useIdentify()
-  const user = session?.user as AuthUser
 
   async function fetchVeltJWTToken(userId: string) {
     const res = await fetch("/api/velt/token", {
@@ -24,18 +26,20 @@ function VeltIdentifyUser() {
       body: JSON.stringify({ userId }),
     })
     if (!res.ok) throw new Error("Failed to fetch Velt JWT token")
-    return res.json() // { authToken: string }
+    return res.json() as Promise<{ authToken: string }>
   }
 
   React.useEffect(() => {
-    if (!user) return
+    if (!session?.user) return
+
+    const user = session.user as AuthUser   // 👈 enforce typing
 
     const identifyUser = async () => {
       const { authToken } = await fetchVeltJWTToken(user.id)
 
       identify(
         {
-          userId: user.id,
+          userId: user.id,                  // 👈 map id → userId
           name: user.name ?? undefined,
           email: user.email ?? undefined,
           photoUrl: user.avatarUrl ?? "/placeholder-user.png",
@@ -45,12 +49,16 @@ function VeltIdentifyUser() {
     }
 
     identifyUser().catch(console.error)
-  }, [user, identify])
+  }, [session, identify])
 
   return null
 }
 
-export function VeltProvider({ children, documentId, dataProviders }: VeltProviderProps) {
+export function VeltProvider({
+  children,
+  documentId,
+  dataProviders,
+}: VeltProviderProps) {
   const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
 
   if (!apiKey) {

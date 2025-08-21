@@ -3,7 +3,9 @@
 **🧠 Updated Full AI Handoff Prompt — Velt SDK + TipTap + Supabase + LinkedIn Sync**
 
 [VELT DOCS]:
-refer to `instructions/velt-docs/`
+- Docs: `instructions/velt_documentation/`
+- UI Customization: `instructions/velt_documentation/ui_customization/`
+- REST API: `instructions/velt_documentation/REST_API/`
 
 # **[PROJECT OVERVIEW]:**
 

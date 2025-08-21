@@ -24,7 +24,7 @@ export interface EnrichedProfile {
     description?: string | null;
     location?: string;
   }>;
-
+  
   education: Array<{
     degree: string;
     university: string;

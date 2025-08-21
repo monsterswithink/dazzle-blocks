@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import type { EnrichedProfile, ProcessedProfile } from "@/types/profile";
+import type { EnrichedProfile } from "@/types/enrichedprofile";
+import type { ProcessedProfile } from "@/types/processedprofile";
 
 export async function saveResumeToSupabase(
   profileData: EnrichedProfile

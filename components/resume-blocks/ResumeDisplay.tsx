@@ -1,6 +1,6 @@
 "use client"
 
-import type { ProcessedProfile } from "@/types/profile"
+import type { ProcessedProfile } from "@/types/processedprofile"
 import { cn } from "@/lib/utils"
 
 interface ResumeDisplayProps {

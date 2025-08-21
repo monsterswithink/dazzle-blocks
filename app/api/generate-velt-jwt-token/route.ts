@@ -1,35 +1,53 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-// This route simply returns the user info to be used with Velt client
 export async function POST(req: NextRequest) {
   try {
-    const { userId, organizationId, name, email, photoUrl, color, textColor } = await req.json();
+    const { userId, email, organizationId, isAdmin } = await req.json();
 
     if (!userId || !organizationId) {
       return NextResponse.json(
-        { error: 'userId and organizationId are required' },
+        { error: "userId and organizationId are required" },
         { status: 400 }
       );
     }
 
-    // Return exactly what the client needs to call Velt SDK
-    const veltAuthData = {
-      userId,
-      organizationId,
-      name,
-      email,
-      photoUrl,
-      color,
-      textColor,
+    const url = "https://api.velt.dev/v1/auth/token/get";
+    const body = {
+      data: {
+        userId,
+        apiKey: process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY, // Public key from Velt console
+        authToken: process.env.VELT_CLIENT_AUTH_TOKEN, // Client token from Velt console
+        userProperties: {
+          email,
+          organizationId,
+          isAdmin: !!isAdmin,
+        },
+      },
     };
 
-    return NextResponse.json(veltAuthData);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
+    if (!response.ok) {
+      throw new Error(`Velt API HTTP error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const userJwt = data?.result?.data?.token;
+
+    if (!userJwt) {
+      throw new Error("No token returned from Velt API");
+    }
+
+    return NextResponse.json({ veltToken: userJwt });
   } catch (error) {
-    console.error('Error preparing Velt auth data:', error);
+    console.error("Error generating Velt auth token:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

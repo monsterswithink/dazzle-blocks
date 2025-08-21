@@ -1,27 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
 
-// Server-side secret (this is your own key to sign JWTs for users)
-const USER_JWT_SECRET = process.env.USER_JWT_SECRET;
-
-if (!USER_JWT_SECRET) {
-  throw new Error("Missing USER_JWT_SECRET in environment variables");
-}
-
-// Function to generate a JWT for a Velt user
-async function generateVeltAuthToken(payload: {
-  userId: string;
-  organizationId: string;
-  name?: string;
-  email?: string;
-  photoUrl?: string;
-  color?: string;
-  textColor?: string;
-}) {
-  return { authToken: jwt.sign(payload, USER_JWT_SECRET, { expiresIn: '1h' }) };
-}
-
+// This route simply returns the user info to be used with Velt client
 export async function POST(req: NextRequest) {
   try {
     const { userId, organizationId, name, email, photoUrl, color, textColor } = await req.json();
@@ -33,7 +13,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const veltAuthToken = await generateVeltAuthToken({
+    // Return exactly what the client needs to call Velt SDK
+    const veltAuthData = {
       userId,
       organizationId,
       name,
@@ -41,12 +22,12 @@ export async function POST(req: NextRequest) {
       photoUrl,
       color,
       textColor,
-    });
+    };
 
-    return NextResponse.json(veltAuthToken);
+    return NextResponse.json(veltAuthData);
 
   } catch (error) {
-    console.error('Error generating Velt auth token:', error);
+    console.error('Error preparing Velt auth data:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

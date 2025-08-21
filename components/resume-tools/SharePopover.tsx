@@ -30,7 +30,7 @@ export function SharePopover({ isOpen, onOpenChange, resumeId }: SharePopoverPro
     }
   }
 
-  const handlePrint = () => {
+ const handlePrint = () => {
     window.print()
     toast.success("Print dialog opened")
   }

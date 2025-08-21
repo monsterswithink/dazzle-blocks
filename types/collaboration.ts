@@ -1,5 +1,3 @@
-// ./types/collaboration.d.ts
-
 // ---------------------------
 // Supabase persisted data
 // ---------------------------

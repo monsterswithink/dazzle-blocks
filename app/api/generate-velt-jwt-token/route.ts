@@ -1,5 +1,26 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
+
+// Server-side secret (this is your own key to sign JWTs for users)
+const USER_JWT_SECRET = process.env.USER_JWT_SECRET;
+
+if (!USER_JWT_SECRET) {
+  throw new Error("Missing USER_JWT_SECRET in environment variables");
+}
+
+// Function to generate a JWT for a Velt user
+async function generateVeltAuthToken(payload: {
+  userId: string;
+  organizationId: string;
+  name?: string;
+  email?: string;
+  photoUrl?: string;
+  color?: string;
+  textColor?: string;
+}) {
+  return { authToken: jwt.sign(payload, USER_JWT_SECRET, { expiresIn: '1h' }) };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +33,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Replace this with the actual function to generate a Velt JWT token
     const veltAuthToken = await generateVeltAuthToken({
       userId,
       organizationId,

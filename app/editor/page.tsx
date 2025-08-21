@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { VeltProvider, useLiveState } from "@/components/resume-providers/Velt"
 import { resumeDataProvider } from "@/lib/velt-data-provider"
 import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
 import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
-import type { EnrichedProfile, ResumeTheme } from "@/types/profile"
+import type { EnrichedProfile } from "@/types/enrichedprofile"
+import type { ResumeTheme } from "@/types/theme"
 
 export default function ResumeEditor() {
   const [profile, setProfile] = useLiveState<EnrichedProfile | null>("profile", null)

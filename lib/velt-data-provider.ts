@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase"
-import type { EnrichedProfile } from "@/types/profile"
+import type { EnrichedProfile } from "@/types/enrichedprofile"
 
 export const resumeDataProvider = {
   async get(req: { documentId: string }) {

@@ -31,25 +31,25 @@ function VeltIdentifyUser() {
   }
 
   React.useEffect(() => {
-    if (!session?.user) return
+  if (!session?.user || !identify) return
 
-    const identifyUser = async () => {
-      const userId = session.user.id
-      const { authToken } = await fetchVeltJWTToken(userId)
+  const identifyUser = async () => {
+    const userId = session.user.id
+    const { authToken } = await fetchVeltJWTToken(userId)
 
-      identify(
-        {
-          userId,
-          name: session.user.name ?? undefined,
-          email: session.user.email ?? undefined,
-          photoUrl: session.user.image ?? "/placeholder-user.png",
-        },
-        { authToken }
-      )
-    }
+    identify(
+      {
+        userId,
+        name: session.user.name ?? undefined,
+        email: session.user.email ?? undefined,
+        photoUrl: session.user.image ?? "/placeholder-user.png",
+      },
+      { authToken }
+    )
+  }
 
-    identifyUser().catch(console.error)
-  }, [session, identify])
+  identifyUser().catch(console.error)
+}, [session, identify])
 
   return null
 }

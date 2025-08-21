@@ -1,5 +1,18 @@
 # AGENTS INSTRUCTIONS
 
+## OVERVIEW OF PROJECT'S UNIQUE METHOD FOR SIMULATING 1:1 LINKEDIN → RESUME INSTANT SYNCING:
+
+1. `api/auth/[...nextauth]/route.ts` handlers link to the ***lib/auth.ts*** logic to run custom linkedin auth using next-auth v5 (`next-auth@beta`)
+- IMPORTANT: the auth file fetches vanityUrl using scopes in the ***lib/auth.ts*** auth logic through JWT tokens, building the full [https://www.linkedin.com/in/{vanityUrl}](https://www.linkedin.com/in/%7BvanityUrl%7D) to use for the next route's api call
+2. api/enrich/route calls enrichlayer API via:
+3. We used `middleware.ts` logic to then redirect the user to a very basic '/profile' page  after auth is complete, which serves upo a very basic profile overview using the ProfileSnapshotCard component that displays basic info. We do this to provide enough time for the '/api/enrichlayer' api call route to process the full profile data about the user. The client component displays a progress bar while this occurs.
+4. This is key. We now have the resume data. The API response that's responsible for all the data we handle in Velt. So we save it instantly in Supabase using the 'lib/supabase.ts' call.
+- enrichlayer uses the key: `public_identifier` as the primary key for the user.
+5. Velt should be taking only this data from Supabase. It expects a `user` object with types for: ```uid, displayName, email, photoURL, organizationId, colorCode``` as the `user` is passed to the `useIdentify(user)` hook for anything to happen.
+6. The 'lib/resume-service.ts' file handles resume editor stuff but thats not the focus right now since we cant even get the auth parts working. 
+---
+
+
 **🧠 Updated Full AI Handoff Prompt — Velt SDK + TipTap + Supabase + LinkedIn Sync**
 
 [VELT DOCS]:

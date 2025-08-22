@@ -16,6 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         params: { projection: "(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams),vanityName)" },
       },
       async profile(profile, tokens) {
+        console.log("Debugging NextAuth LinkedIn profile callback - raw profile:", profile);
         const emailResponse = await fetch(
           "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
           {
@@ -26,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         )
         const emailData = await emailResponse.json()
         return {
-          id: profile.id,
+          id: profile.sub,
           name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
           email: emailData?.elements?.[0]?.["handle~"]?.emailAddress,
           image: profile.profilePicture?.["displayImage~"]?.elements?.[0]?.identifiers?.[0]?.identifier,

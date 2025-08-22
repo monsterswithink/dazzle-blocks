@@ -1,16 +1,14 @@
 "use client"
 
-import React from "react"
-import { useSession } from "next-auth/react"
+import React, { useEffect } from "react"
+import { useSession, signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
 import { Linkedin, Loader2 } from "lucide-react"
-import { signIn } from "next-auth/react"
 
-export default function HomePage() {
+export default function HomeContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
 

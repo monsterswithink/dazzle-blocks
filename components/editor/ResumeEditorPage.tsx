@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { VeltProvider, useLiveState } from "@/components/resume-providers/Velt"
+import { VeltProvider, useLiveState } from "@/resume-providers/Velt"
 import { resumeDataProvider } from "@/lib/velt-data-provider"
-import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
-import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
+import { FloatingToolbar } from "@/resume-tools/FloatingToolbar"
+import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay"
 import type { EnrichedProfile } from "@/types/enrichedprofile"
 import type { ResumeTheme } from "@/types/theme"
 

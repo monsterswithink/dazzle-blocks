@@ -1,11 +1,7 @@
 "use client"
 
-import dynamic from "next/dynamic"
+import { HomeContent } from "@/resume-blocks/HomeContent";
 
-const Home = dynamic(() => import("@/pages/Home"), {
-  ssr: false,
-})
-
-export default function Page() {
-  return <Home />
+export default function HomePage() {
+  return <HomeContent />;
 }

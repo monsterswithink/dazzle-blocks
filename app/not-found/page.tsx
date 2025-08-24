@@ -1,3 +1,11 @@
-export default function NotFound() {
-  return <h1>404 | Not Found</h1>;
-}
+"use client"
+import dynamic from 'next/dynamic';
+
+  const NotFoundContent = dynamic(() => import('@/resume-blocks/NotFoundContent'), {
+      ssr: false,
+});
+  export function NotFoundPage() {
+    return (
+      <NotFoundContent />
+      )
+  }

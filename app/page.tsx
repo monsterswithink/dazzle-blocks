@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 
-const HomePage = dynamic(() => import("@/pages/Homee"), {
+const Home = dynamic(() => import("@/pages/Homee"), {
   ssr: false,
 })
 

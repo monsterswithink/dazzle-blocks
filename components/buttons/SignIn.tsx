@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { Button } from "@/ui/button"
 import { Linkedin, Loader2 } from "lucide-react"
 import { signIn, useSession } from "next-auth/react"
@@ -12,30 +11,13 @@ export default function SignIn() {
 
   const handleSignIn = async () => {
     setIsLoading(true)
-    try {
-      await signIn("linkedin", {
-        callbackUrl: "https://dazzle-one.vercel.app/api/auth/callback/linkedin",
-        redirect: true,
-      })
-    } catch (error) {
-      console.error("Sign in error:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  if (status === "loading") {
-    return (
-      <Button disabled className="w-full">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading...
-      </Button>
-    )
+    await signIn("linkedin", { callbackUrl: "/profile", redirect: true })
+    setIsLoading(false)
   }
 
   return (
-    <Button onClick={handleSignIn} disabled={isLoading} className="w-full" size="lg">
-      {isLoading ? (
+    <Button onClick={handleSignIn} disabled={status === "loading" || isLoading} size="lg" className="w-full">
+      {status === "loading" || isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Signing in...

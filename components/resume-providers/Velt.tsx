@@ -1,77 +1,54 @@
-"use client"
+"use client";
 
-import React from "react"
+import type React from "react";
 import {
   VeltProvider as VeltSDKProvider,
   useIdentify,
   useLiveState,
-} from "@veltdev/react"
-import { useSession } from "next-auth/react"
-import type { AuthUser } from "@/types/AuthUser"  // 👈 import your type
+} from "@veltdev/react";
+import { useSession } from "next-auth/react";
+import type { AuthUser } from "@/types/auth";
 
 interface VeltProviderProps {
-  children: React.ReactNode
-  documentId?: string
-  dataProviders?: any
+  children: React.ReactNode;
+  documentId?: string;
+  dataProviders?: any;
 }
 
-function VeltIdentifyUser() {
-  const { data: session } = useSession()
-  const identify = useIdentify()
-
-  async function fetchVeltJWTToken(userId: string) {
-    const res = await fetch("/api/velt/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    })
-    if (!res.ok) throw new Error("Failed to fetch Velt JWT token")
-    return res.json() as Promise<{ authToken: string }>
-  }
+function VeltUser() {
+  const { data: session } = useSession();
 
   React.useEffect(() => {
-    if (!session?.user) return
-
-    const user = session.user as AuthUser   // 👈 enforce typing
-
-    const identifyUser = async () => {
-      const { authToken } = await fetchVeltJWTToken(user.id)
-
-      identify(
-        {
-          userId: user.id,                  // 👈 map id → userId
-          name: user.name ?? undefined,
-          email: user.email ?? undefined,
-          photoUrl: user.avatarUrl ?? "/placeholder-user.png",
-        },
-        { authToken }
-      )
+    if (session?.user) {
+      const user = session.user as AuthUser;
+      useIdentify({
+        uid: user.id,
+        displayName: user.name || undefined,
+        email: user.email || undefined,
+        photoURL: user.avatarUrl || undefined,
+        organizationId: undefined,
+        colorCode: undefined,
+      });
     }
+  }, [session]);
 
-    identifyUser().catch(console.error)
-  }, [session, identify])
-
-  return null
+  return null;
 }
 
-export function VeltProvider({
-  children,
-  documentId,
-  dataProviders,
-}: VeltProviderProps) {
-  const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY
+export function VeltProvider({ children, documentId, dataProviders }: VeltProviderProps) {
+  const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY;
 
   if (!apiKey) {
-    console.warn("NEXT_PUBLIC_VELT_PUBLIC_KEY is not set")
-    return <>{children}</>
+    console.warn("NEXT_PUBLIC_VELT_PUBLIC_KEY is not set");
+    return <>{children}</>;
   }
 
   return (
     <VeltSDKProvider apiKey={apiKey} documentId={documentId} dataProviders={dataProviders}>
-      <VeltIdentifyUser />
+      <VeltUser />
       {children}
     </VeltSDKProvider>
-  )
+  );
 }
 
-export { useLiveState }
+export { useLiveState };

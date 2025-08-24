@@ -16,7 +16,7 @@ export default function SignIn() {
   }
 
   return (
-    <Button onClick={handleSignIn} disabled={status === "loading" || isLoading} size="lg" className="w-full">
+    <Link prefetch={false}><Button onClick={handleSignIn} disabled={status === "loading" || isLoading} size="lg" className="w-full">
       {status === "loading" || isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -28,6 +28,6 @@ export default function SignIn() {
           Sign in with LinkedIn
         </>
       )}
-    </Button>
+    </Button></Link>
   )
 }

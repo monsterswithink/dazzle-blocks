@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Loader2 } from "lucide-react";
 
-export default function Profile() {
+export default function ProfileContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);

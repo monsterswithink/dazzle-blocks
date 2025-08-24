@@ -7,5 +7,5 @@ const ProfilePage = dynamic(() => import("@/pages/Profile"), {
 })
 
 export default function Page() {
-  return <ProfilePage />
+  return <Profile />
 }

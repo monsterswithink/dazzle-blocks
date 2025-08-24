@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useLiveState } from "@/components/resume-providers/Velt"
+import { useLiveState } from "@/resume-providers/Velt"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -35,7 +35,7 @@ interface ResumeEditorProps {
   resumeId: string
 }
 
-export function ResumeEditor({ resumeId }: ResumeEditorProps) {
+export default function ResumeEditor({ resumeId }: ResumeEditorProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [resumeData, setResumeData] = useLiveState<any | null>(`resume-${resumeId}`, null)

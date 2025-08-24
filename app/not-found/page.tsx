@@ -1,11 +1,9 @@
-"use client"
-import dynamic from 'next/dynamic';
+import NotFound from "@/resume-blocks/not-found"
 
-  const NotFoundContent = dynamic(() => import('@/resume-blocks/NotFoundContent'), {
-      ssr: false,
-});
-  export function NotFoundPage() {
-    return (
-      <NotFoundContent />
-      )
-  }
+export default function Page() {
+  return (
+    <div className="min-h-svh">
+      <NotFound />
+    </div>
+  )
+}

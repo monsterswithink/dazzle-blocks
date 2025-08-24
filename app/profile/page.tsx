@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 
-const ProfilePage = dynamic(() => import("@/resume-blocks/ProfilePage"), {
+const ProfilePage = dynamic(() => import("@/pages/Profile"), {
   ssr: false,
 })
 

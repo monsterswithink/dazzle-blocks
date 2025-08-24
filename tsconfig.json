@@ -24,6 +24,7 @@
       "@/app/*": ["./app/*"],
       "#styles": ["./app/globals.css"],
       "@/components/*": ["./components/*"],
+      "@/pages/*": ["./pages/*"],
       "@/resume-tools/*": ["./components/resume-tools/*"],
       "@/resume-blocks/*": ["./components/resume-blocks/*"],
       "@/buttons/*": ["./components/buttons/*"],

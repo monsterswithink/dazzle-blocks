@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./*"],
       "@/app/*": ["./app/*"],
-      "#styles": ["./app/globals.css"],
+      "@/styles/*": ["./app/styles/globals.css"],
       "@/components/*": ["./components/*"],
       "@/resume-tools/*": ["./components/resume-tools/*"],
       "@/resume-blocks/*": ["./components/resume-blocks/*"],

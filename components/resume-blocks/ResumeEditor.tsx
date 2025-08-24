@@ -35,7 +35,7 @@ interface ResumeEditorProps {
   resumeId: string
 }
 
-export function ResumeEditor({ resumeId }: ResumeEditorProps) {
+export default function ResumeEditor({ resumeId }: ResumeEditorProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [resumeData, setResumeData] = useLiveState<any | null>(`resume-${resumeId}`, null)

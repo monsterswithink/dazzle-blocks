@@ -5,7 +5,7 @@ import { Button } from "@/ui/button"
 import { Home } from "lucide-react"
 import "@/styles/glitch.css"
 
-export default function NotFound() {
+export default function NotFoundContent() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 overflow-hidden">
       <div className="text-center space-y-8 max-w-2xl mx-auto">

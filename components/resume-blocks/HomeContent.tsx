@@ -11,7 +11,7 @@ import { Linkedin, Loader2 } from "lucide-react"
 
 
 
-export default function Home() {
+export default function HomeContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
 

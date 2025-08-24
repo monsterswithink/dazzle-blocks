@@ -3,7 +3,7 @@ import { ResumeEditor } from "@/resume-blocks/ResumeEditor"
 import { VeltProvider } from "@/resume-providers/Velt"
 import { Loader2 } from "lucide-react"
 
-export default function ResumePage({ params }: { params: { id: string } }) {
+export default function ResumeEditorPage({ params }: { params: { id: string } }) {
   return (
     <VeltProvider documentId={params.id}>
       <Suspense

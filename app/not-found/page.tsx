@@ -1,4 +1,4 @@
-import NotFound from "@/resume-blocks/not-found"
+import NotFound from "@/resume-blocks/NotFound"
 
 export default function Page() {
   return (

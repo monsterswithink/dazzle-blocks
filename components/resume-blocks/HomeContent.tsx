@@ -4,7 +4,7 @@ import React, { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
-import SignIn from "./SignIn" // your dedicated SignIn button
+import SignIn from "@/buttons/SignIn" // your dedicated SignIn button
 
 export default function HomeContent() {
   const { data: session, status } = useSession()

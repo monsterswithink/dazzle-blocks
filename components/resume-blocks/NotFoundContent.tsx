@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/ui/button";
 import { Home } from "lucide-react";
+import React from "react";
 import "@/styles/glitch.css";
 
 export function NotFoundContent() {

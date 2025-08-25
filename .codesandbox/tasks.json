@@ -2,12 +2,12 @@
   // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
-      "command": "rm -rf bun.lockb node_modules .cache pnpm-lock.yaml .next",
-      "name": "Installing Dependencies"
+      "command": "rm -rf bun.lockb node_modules .cache pnpm-lock.yaml .next && bun pm cache rm",
+      "name": "Purge"
     },
     {
       "command": "bun i",
-      "name": "b"
+      "name": "Installing Dependencies"
     },
     {
       "command": "bun remove react react-dom next lucide-react next-themes react lucide",
@@ -21,24 +21,19 @@
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
-    "build": {
-      "name": "build",
-      "command": "pnpm build",
+    "install": {
+      "name": "install",
+      "command": "bun i",
       "runAtStart": false
     },
     "dev": {
       "name": "dev",
       "command": "bun dev",
-      "runAtStart": true
-    },
-    "lint": {
-      "name": "lint",
-      "command": "pnpm lint",
       "runAtStart": false
     },
-    "start": {
-      "name": "start",
-      "command": "pnpm start",
+    "build": {
+      "name": "build",
+      "command": "bun run build",
       "runAtStart": false
     }
   }

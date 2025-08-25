@@ -1,11 +1,10 @@
-"use client"
-import dynamic from 'next/dynamic';
+"use client";
+import dynamic from "next/dynamic";
+import React from "react";
 
-  const ProfileContent = dynamic(() => import('@/resume-blocks/ProfileContent'), {
-      ssr: false,
+const ProfileContent = dynamic(() => import("@/resume-blocks/ProfileContent"), {
+  ssr: false,
 });
-  export function ProfilePage() {
-    return (
-      <ProfileContent />
-      )
-  }
+export default function ProfilePage() {
+  return <ProfileContent />;
+}

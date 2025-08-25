@@ -1,11 +1,13 @@
-"use client"
-import dynamic from 'next/dynamic';
+"use client";
+import React from "react";
+import dynamic from "next/dynamic";
 
-  const NotFoundContent = dynamic(() => import('@/resume-blocks/NotFoundContent'), {
-      ssr: false,
-});
-  export function NotFound() {
-    return (
-      <NotFoundContent />
-      )
+const NotFoundContent = dynamic(
+  () => import("@/resume-blocks/NotFoundContent"),
+  {
+    ssr: false,
   }
+);
+export function NotFound() {
+  return <NotFoundContent />;
+}

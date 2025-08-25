@@ -8,6 +8,6 @@ const NotFoundContent = dynamic(
     ssr: false,
   }
 );
-export function NotFound() {
+export function NotFoundPage() {
   return <NotFoundContent />;
 }

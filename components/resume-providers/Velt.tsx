@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import {
   VeltProvider as VeltSDKProvider,
   useIdentify,
@@ -35,7 +35,11 @@ function VeltUser() {
   return null;
 }
 
-export function VeltProvider({ children, documentId, dataProviders }: VeltProviderProps) {
+export function VeltProvider({
+  children,
+  documentId,
+  dataProviders,
+}: VeltProviderProps) {
   const apiKey = process.env.NEXT_PUBLIC_VELT_PUBLIC_KEY;
 
   if (!apiKey) {
@@ -44,7 +48,11 @@ export function VeltProvider({ children, documentId, dataProviders }: VeltProvid
   }
 
   return (
-    <VeltSDKProvider apiKey={apiKey} documentId={documentId} dataProviders={dataProviders}>
+    <VeltSDKProvider
+      apiKey={apiKey}
+      documentId={documentId}
+      dataProviders={dataProviders}
+    >
       <VeltUser />
       {children}
     </VeltSDKProvider>

@@ -4,13 +4,13 @@ The `FloatingToolbar` component will provide rich text editing capabilities for 
 
 **Files to create/modify:**
 
-1.  `components/resume-tools/FloatingToolbar.tsx` (New file)
-2.  `components/resume-blocks/EditableText.tsx` (New file)
+1.  `components/tools/FloatingToolbar.tsx` (New file)
+2.  `components/blocks/EditableText.tsx` (New file)
 3.  `app/resume/[id]/ResumeViewer.tsx` (Modify existing file)
 
 ---
 
-## `components/resume-tools/FloatingToolbar.tsx`
+## `components/tools/FloatingToolbar.tsx`
 
 This component will be a floating toolbar that appears when the `About Me` section is in edit mode. It will contain buttons for common text formatting options (bold, italic, underline, strikethrough, code, bullet list, ordered list, link).
 
@@ -19,11 +19,11 @@ This component will be a floating toolbar that appears when the `About Me` secti
 
 import { Editor } from '@tiptap/react'
 import { Bold, Italic, Underline, Strikethrough, Code, List, ListOrdered, Link, Unlink } from 'lucide-react'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Label } from '@/components/ui/label'
+import { ToggleGroup, ToggleGroupItem } from '@/ui/toggle-group'
+import { Button } from '@/ui/button'
+import { Input } from '@/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover'
+import { Label } from '@/ui/label'
 import { useState } from 'react'
 
 interface FloatingToolbarProps {
@@ -169,7 +169,7 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
 }
 \`\`\`
 
-## `components/resume-blocks/EditableText.tsx`
+## `components/blocks/EditableText.tsx`
 
 This component will be a simple inline editable text field that switches between an input and a `p` tag based on an `isEditing` prop.
 
@@ -177,7 +177,7 @@ This component will be a simple inline editable text field that switches between
 'use client'
 
 import * as React from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@/ui/input'
 import { cn } from '@/lib/utils'
 
 interface EditableTextProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -213,7 +213,7 @@ This file needs to be updated to:
 
 1.  Import `useEditor` and `EditorContent` from `@tiptap/react`.
 2.  Import `StarterKit` and `Link` from `@tiptap/starter-kit` and `@tiptap/extension-link` respectively.
-3.  Import `FloatingToolbar` from `components/resume-tools/FloatingToolbar`.
+3.  Import `FloatingToolbar` from `components/tools/FloatingToolbar`.
 4.  Initialize the Tiptap editor using `useEditor` and pass it to `EditorContent`.
 5.  Conditionally render `EditorContent` or a `div` with `dangerouslySetInnerHTML` for the "About Me" section based on `isEditing`.
 6.  Conditionally render `FloatingToolbar` when `isEditing` is true.
@@ -229,22 +229,22 @@ import { useRoom, useSelf } from "@veltdev/react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/ui/resizable"
+import { Button } from "@/ui/button"
+import { Label } from "@/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select"
+import { Textarea } from "@/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible"
 import { ChevronDown, Plus, Minus, Download, Eye } from 'lucide-react'
-import { ProfileSnapshotCard } from "@/components/resume-blocks/ProfileSnapshotCard"
-import { FloatingToolbar } from "@/components/resume-tools/FloatingToolbar"
-import { PresenceAvatars } from "@/components/resume-tools/PresenceAvatars"
-import { ProfileVideoButton } from "@/components/resume-tools/ProfileVideoButton"
-import { SharePopover } from "@/components/resume-tools/SharePopover"
-import { ResumeDisplay } from "@/components/resume-blocks/ResumeDisplay"
-import { EditableText } from "@/components/resume-blocks/EditableText"
-import { Skills } from "@/components/resume-blocks/Skills"
+import { ProfileSnapshotCard } from "@/blocks/ProfileSnapshotCard"
+import { FloatingToolbar } from "@/tools/FloatingToolbar"
+import { PresenceAvatars } from "@/tools/PresenceAvatars"
+import { ProfileVideoButton } from "@/tools/ProfileVideoButton"
+import { SharePopover } from "@/tools/SharePopover"
+import { ResumeDisplay } from "@/blocks/ResumeDisplay"
+import { EditableText } from "@/blocks/EditableText"
+import { Skills } from "@/blocks/Skills"
 import { useVeltClient, VeltRecorder, VeltAnalytics, VeltPresence, VeltComments, VeltProvider } from "@veltdev/react"
 import { Loader2 } from 'lucide-react'
 import { toast } from "sonner"

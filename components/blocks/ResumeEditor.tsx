@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useLiveState } from "@/resume-providers/Velt";
+import { useLiveState } from "@/components/providers/Velt";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -30,13 +30,13 @@ import {
   CollapsibleTrigger,
 } from "@/ui/collapsible";
 import { ChevronDown, Plus, Minus, Download, Eye, Loader2 } from "lucide-react";
-import { ProfileSnapshotCard } from "@/resume-blocks/ProfileSnapshotCard";
-import { FloatingToolbar } from "@/resume-tools/FloatingToolbar";
-import { ProfileVideoButton } from "@/resume-tools/ProfileVideoButton";
-import { SharePopover } from "@/resume-tools/SharePopover";
-import { ResumeDisplay } from "@/resume-blocks/ResumeDisplay";
-import { EditableText } from "@/resume-blocks/EditableText";
-import { Skills } from "@/resume-blocks/Skills";
+import { ProfileSnapshotCard } from "@/blocks/ProfileSnapshotCard";
+import { FloatingToolbar } from "@/tools/FloatingToolbar";
+import { ProfileVideoButton } from "@/tools/ProfileVideoButton";
+import { SharePopover } from "@/tools/SharePopover";
+import { ResumeDisplay } from "@/blocks/ResumeDisplay";
+import { EditableText } from "@/blocks/EditableText";
+import { Skills } from "@/blocks/Skills";
 import {
   VeltRecorderTool,
   VeltRecorderControlPanel,

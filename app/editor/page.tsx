@@ -1,11 +1,9 @@
-"use client"
-import dynamic from 'next/dynamic';
+"use client";
+import dynamic from "next/dynamic";
 
-  const ResumeEditor = dynamic(() => import('@/resume-blocks/ResumeEditor'), {
-      ssr: false,
+const ResumeEditor = dynamic(() => import("@/blocks/ResumeEditor"), {
+  ssr: false,
 });
-  export function ResumePage() {
-    return (
-      <ResumeEditor />
-      )
-  }
+export function ResumePage() {
+  return <ResumeEditor />;
+}

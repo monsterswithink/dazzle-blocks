@@ -210,7 +210,7 @@ This file will wrap the application with `SessionProvider` from `next-auth/react
 import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { type ThemeProviderProps } from 'next-themes'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/ui/sonner'
 
 export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
@@ -265,8 +265,8 @@ The home page will be a simple landing page with a sign-in button.
 
 \`\`\`tsx
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card"
 import { GithubIcon, LinkedinIcon } from 'lucide-react'
 
 export default function HomePage() {

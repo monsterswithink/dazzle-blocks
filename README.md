@@ -115,7 +115,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
     -   `layout.tsx`: Root layout for the application.
 -   `components/`: Reusable React components.
     -   `resume-blocks/`: Components specific to resume sections (e.g., `ResumeEditor.tsx`).
-    -   `resume-providers/Velt.tsx`: Velt SDK provider.
+    -   `providers/Velt.tsx`: Velt SDK provider.
     -   `ui/`: Shadcn/ui components.
 -   `lib/`: Utility functions and configurations.
     -   `auth.ts`: NextAuth.js configuration.

@@ -4,8 +4,8 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes";
 import React from "react";
-import { Toaster } from "@/components/ui/sonner";
-import { VeltProvider } from "@/components/resume-providers/Velt";
+import { Toaster } from "@/ui/sonner";
+import { VeltProvider } from "@/components/providers/Velt";
 
 export function Providers({ children, ...props }: ThemeProviderProps) {
   return (

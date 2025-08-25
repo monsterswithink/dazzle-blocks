@@ -1,0 +1,151 @@
+.
+├── app
+│   ├── api
+│   │   ├── auth
+│   │   │   ├── error
+│   │   │   │   └── route.ts
+│   │   │   └── [...nextAuth]
+│   │   │       └── route.ts
+│   │   ├── enrich
+│   │   │   └── route.ts
+│   │   └── profile
+│   │       └── route.ts
+│   ├── auth
+│   │   └── error
+│   │       ├── loading.tsx
+│   │       └── page.tsx
+│   ├── editor
+│   │   └── page.tsx
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── not-found.tsx
+│   ├── page.tsx
+│   ├── profile
+│   │   └── page.tsx
+│   ├── providers.tsx
+│   ├── resume
+│   │   └── [id]
+│   │       └── page.tsx
+│   └── styles
+│       └── glitch.css
+├── bun.lock
+├── .codesandbox
+│   └── tasks.json
+├── components
+│   ├── blocks
+│   │   ├── AuthErrorContent.tsx
+│   │   ├── CollapsibleSection.tsx
+│   │   ├── EditableText.tsx
+│   │   ├── HomeContent.tsx
+│   │   ├── NotFoundContent.tsx
+│   │   ├── ProfileContent.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── ProfileSnapshotCard.tsx
+│   │   ├── ResumeDisplay.tsx
+│   │   ├── ResumeEditor.tsx
+│   │   └── Skills.tsx
+│   ├── components
+│   │   └── SignIn.tsx
+│   ├── providers
+│   │   └── Velt.tsx
+│   ├── theme-provider.tsx
+│   ├── tools
+│   │   ├── FloatingToolbar.tsx
+│   │   ├── ProfileVideoButton.tsx
+│   │   └── SharePopover.tsx
+│   └── ui
+│       ├── avatar.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── collapsible.tsx
+│       ├── context-menu.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── popover.tsx
+│       ├── progress.tsx
+│       ├── resizable.tsx
+│       ├── select.tsx
+│       ├── sonner.tsx
+│       └── textarea.tsx
+├── components.json
+├── .env
+├── .gitignore
+├── lib
+│   ├── auth.ts
+│   ├── resume-service.ts
+│   ├── supabase.ts
+│   ├── utils.ts
+│   └── velt-data-provider.ts
+├── middleware.ts
+├── .next
+│   ├── app-build-manifest.json
+│   ├── build-manifest.json
+│   ├── cache
+│   │   ├── config.json
+│   │   ├── next-devtools-config.json
+│   │   └── webpack
+│   │       └── client-development
+│   │           ├── 0.pack.gz
+│   │           ├── index.pack.gz
+│   │           └── index.pack.gz.old
+│   ├── package.json
+│   ├── prerender-manifest.json
+│   ├── react-loadable-manifest.json
+│   ├── routes-manifest.json
+│   ├── server
+│   │   ├── app-paths-manifest.json
+│   │   ├── interception-route-rewrite-manifest.js
+│   │   ├── middleware-build-manifest.js
+│   │   ├── middleware-manifest.json
+│   │   ├── middleware-react-loadable-manifest.js
+│   │   ├── next-font-manifest.js
+│   │   ├── next-font-manifest.json
+│   │   ├── pages-manifest.json
+│   │   ├── server-reference-manifest.js
+│   │   └── server-reference-manifest.json
+│   ├── static
+│   │   ├── chunks
+│   │   │   └── polyfills.js
+│   │   └── development
+│   │       ├── _buildManifest.js
+│   │       └── _ssgManifest.js
+│   ├── trace
+│   └── types
+│       ├── cache-life.d.ts
+│       ├── package.json
+│       ├── routes.d.ts
+│       └── validator.ts
+├── next.config.mjs
+├── next-env.d.ts
+├── package.json
+├── postcss.config.mjs
+├── public
+│   ├── data
+│   │   └── initial-resume-data.json
+│   ├── placeholder.jpg
+│   ├── placeholder-logo.png
+│   ├── placeholder-logo.svg
+│   ├── placeholder.svg
+│   ├── placeholder-user.jpg
+│   └── themes
+│       ├── theme-classic.json
+│       ├── theme-creative.json
+│       ├── theme-minimal.json
+│       └── theme-modern.json
+├── README.md
+├── scripts
+│   └── create-resumes-table.sql
+├── styles
+│   └── globals.css
+├── tailwind.config.ts
+├── tree.txt
+├── tsconfig.json
+└── types
+    ├── auth.ts
+    ├── collaboration.ts
+    ├── enrichedprofile.ts
+    ├── processedprofile.ts
+    ├── profile.ts
+    └── theme.ts
+
+37 directories, 111 files
